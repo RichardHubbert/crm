@@ -38,6 +38,11 @@ const AdminUsers = () => {
     );
   }
 
+  const handleUsersChange = () => {
+    // Force refresh by reloading the page - simple solution
+    window.location.reload();
+  };
+
   return (
     <div className="container mx-auto py-8 space-y-6">
       <div className="flex items-center gap-3">
@@ -77,7 +82,7 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       ) : (
-        <AdminUsersTable users={users} />
+        <AdminUsersTable users={users} onUsersChange={handleUsersChange} />
       )}
     </div>
   );
