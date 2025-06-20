@@ -21,6 +21,26 @@ import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
+const ProtectedLayout = () => {
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <SidebarInset>
+          <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/deals" element={<Deals />} />
+            <Route path="/deals/:id" element={<DealView />} />
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
+  );
+};
+
 const ProtectedRoutes = () => {
   const { user } = useAuthContext();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
@@ -88,23 +108,7 @@ const ProtectedRoutes = () => {
 
   // If user is authenticated and has completed onboarding, show main app
   if (user && hasCompletedOnboarding === true) {
-    return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <SidebarInset>
-            <Routes>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/deals" element={<Deals />} />
-              <Route path="/deals/:id" element={<DealView />} />
-              <Route path="/contacts" element={<Contacts />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
-    );
+    return <ProtectedLayout />;
   }
 
   // If not authenticated, redirect to landing page
@@ -130,12 +134,8 @@ const AppRoutes = () => {
       {/* Public route - landing page */}
       <Route path="/" element={<Index />} />
       
-      {/* Protected routes */}
-      <Route path="/dashboard" element={<ProtectedRoutes />} />
-      <Route path="/customers" element={<ProtectedRoutes />} />
-      <Route path="/deals" element={<ProtectedRoutes />} />
-      <Route path="/deals/:id" element={<ProtectedRoutes />} />
-      <Route path="/contacts" element={<ProtectedRoutes />} />
+      {/* Protected routes - using wildcard to allow nested routing */}
+      <Route path="/*" element={<ProtectedRoutes />} />
       
       {/* Catch all - redirect to landing page */}
       <Route path="*" element={<NotFound />} />
