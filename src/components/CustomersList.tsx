@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building2, Edit } from "lucide-react";
 
 interface Customer {
   id: string;
@@ -19,6 +20,7 @@ interface CustomersListProps {
   selectedCustomers: string[];
   onSelectionChange: (customerId: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  onEditCustomer: (customer: Customer) => void;
 }
 
 const CustomersList = ({ 
@@ -26,7 +28,8 @@ const CustomersList = ({
   view, 
   selectedCustomers, 
   onSelectionChange, 
-  onSelectAll 
+  onSelectAll,
+  onEditCustomer
 }: CustomersListProps) => {
   const allSelected = customers.length > 0 && selectedCustomers.length === customers.length;
   const someSelected = selectedCustomers.length > 0;
@@ -48,9 +51,18 @@ const CustomersList = ({
                     {customer.name}
                   </CardTitle>
                 </div>
-                <Badge variant={customer.status === "Active" ? "default" : "secondary"}>
-                  {customer.status}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEditCustomer(customer)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Badge variant={customer.status === "Active" ? "default" : "secondary"}>
+                    {customer.status}
+                  </Badge>
+                </div>
               </div>
               <CardDescription>{customer.industry || "No industry specified"}</CardDescription>
             </CardHeader>
@@ -83,6 +95,7 @@ const CustomersList = ({
             <TableHead>Industry</TableHead>
             <TableHead>Revenue</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="w-16">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -106,6 +119,15 @@ const CustomersList = ({
                 <Badge variant={customer.status === "Active" ? "default" : "secondary"}>
                   {customer.status}
                 </Badge>
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditCustomer(customer)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}

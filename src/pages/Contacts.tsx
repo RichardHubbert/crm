@@ -1,13 +1,13 @@
-
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Search, User, Loader2, Upload, Trash2 } from "lucide-react";
-import { useContacts } from "@/hooks/useContacts";
+import { useContacts, Contact } from "@/hooks/useContacts";
 import CSVImport from "@/components/CSVImport";
 import AddContactDialog from "@/components/AddContactDialog";
+import EditContactDialog from "@/components/EditContactDialog";
 import ViewToggle from "@/components/ViewToggle";
 import ContactsList from "@/components/ContactsList";
 import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
@@ -17,8 +17,10 @@ const Contacts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -45,6 +47,11 @@ const Contacts = () => {
 
   const handleSelectAll = (selected: boolean) => {
     setSelectedContacts(selected ? filteredContacts.map(c => c.id) : []);
+  };
+
+  const handleEditContact = (contact: Contact) => {
+    setEditingContact(contact);
+    setShowEditDialog(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -187,12 +194,19 @@ const Contacts = () => {
           selectedContacts={selectedContacts}
           onSelectionChange={handleSelectionChange}
           onSelectAll={handleSelectAll}
+          onEditContact={handleEditContact}
         />
       )}
 
       <AddContactDialog 
         open={showAddDialog} 
         onOpenChange={setShowAddDialog} 
+      />
+
+      <EditContactDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        contact={editingContact}
       />
 
       <DeleteConfirmationDialog

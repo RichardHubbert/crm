@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { User, Mail, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, Mail, Phone, Edit } from "lucide-react";
 import { Contact } from "@/hooks/useContacts";
 
 interface ContactsListProps {
@@ -12,6 +13,7 @@ interface ContactsListProps {
   selectedContacts: string[];
   onSelectionChange: (contactId: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  onEditContact: (contact: Contact) => void;
 }
 
 const ContactsList = ({ 
@@ -19,7 +21,8 @@ const ContactsList = ({
   view, 
   selectedContacts, 
   onSelectionChange, 
-  onSelectAll 
+  onSelectAll,
+  onEditContact
 }: ContactsListProps) => {
   const allSelected = contacts.length > 0 && selectedContacts.length === contacts.length;
   const someSelected = selectedContacts.length > 0;
@@ -41,9 +44,18 @@ const ContactsList = ({
                     {contact.name}
                   </CardTitle>
                 </div>
-                <Badge variant={contact.status === "Active" ? "default" : "secondary"}>
-                  {contact.status}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEditContact(contact)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Badge variant={contact.status === "Active" ? "default" : "secondary"}>
+                    {contact.status}
+                  </Badge>
+                </div>
               </div>
               <CardDescription>
                 {contact.title ? `${contact.title}` : "No title"} 
@@ -89,6 +101,7 @@ const ContactsList = ({
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead className="w-16">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -128,6 +141,15 @@ const ContactsList = ({
                 <Badge variant={contact.status === "Active" ? "default" : "secondary"}>
                   {contact.status}
                 </Badge>
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditContact(contact)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}

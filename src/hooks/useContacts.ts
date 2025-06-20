@@ -67,6 +67,29 @@ export const useContacts = () => {
     }
   };
 
+  const updateContact = async (contactId: string, contactData: Partial<Omit<Contact, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'customer'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from('contacts')
+        .update(contactData)
+        .eq('id', contactId)
+        .select(`
+          *,
+          customer:customers(name)
+        `)
+        .single();
+
+      if (error) throw error;
+      
+      setContacts(prev => prev.map(contact => 
+        contact.id === contactId ? data : contact
+      ));
+      return data;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to update contact');
+    }
+  };
+
   const deleteContacts = async (contactIds: string[]) => {
     try {
       const { error } = await supabase
@@ -92,6 +115,7 @@ export const useContacts = () => {
     error,
     refetch: fetchContacts,
     addContact,
+    updateContact,
     deleteContacts,
   };
 };
