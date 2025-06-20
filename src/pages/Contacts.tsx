@@ -13,13 +13,18 @@ import CSVImport from "@/components/CSVImport";
 const Contacts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
-  const { contacts, loading, error } = useContacts();
+  const { contacts, loading, error, refetch } = useContacts();
 
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (contact.customer?.name && contact.customer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (contact.title && contact.title.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const handleImportComplete = () => {
+    setShowImportDialog(false);
+    refetch(); // Refresh the contacts list
+  };
 
   if (loading) {
     return (
@@ -72,7 +77,7 @@ const Contacts = () => {
               <DialogHeader>
                 <DialogTitle>Import Contact Data</DialogTitle>
               </DialogHeader>
-              <CSVImport />
+              <CSVImport onImportComplete={handleImportComplete} />
             </DialogContent>
           </Dialog>
           <Button className="bg-blue-600 hover:bg-blue-700">

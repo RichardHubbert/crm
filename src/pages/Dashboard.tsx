@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,11 @@ import CSVImport from "@/components/CSVImport";
 
 const Dashboard = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
+
+  const handleImportComplete = () => {
+    setShowImportDialog(false);
+    // Could add a refetch of dashboard data here if needed
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -28,7 +32,7 @@ const Dashboard = () => {
             <DialogHeader>
               <DialogTitle>Import Data</DialogTitle>
             </DialogHeader>
-            <CSVImport />
+            <CSVImport onImportComplete={handleImportComplete} />
           </DialogContent>
         </Dialog>
       </div>

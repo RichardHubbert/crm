@@ -16,7 +16,11 @@ interface CSVRow {
   [key: string]: string;
 }
 
-const CSVImport = () => {
+interface CSVImportProps {
+  onImportComplete?: () => void;
+}
+
+const CSVImport = ({ onImportComplete }: CSVImportProps) => {
   const [importType, setImportType] = useState<ImportType | "">("");
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
@@ -153,6 +157,11 @@ const CSVImport = () => {
       setFile(null);
       setImportType("");
       setPreview([]);
+      
+      // Close dialog if callback provided
+      if (onImportComplete) {
+        onImportComplete();
+      }
       
     } catch (error) {
       console.error('Import error:', error);
