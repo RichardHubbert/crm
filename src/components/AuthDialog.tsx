@@ -39,7 +39,7 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
         if (mode === 'signup') {
           toast({
             title: "Check your email",
-            description: "We've sent you a confirmation link",
+            description: "We've sent you a confirmation link. Please check your email and click the link to complete your registration.",
           });
         } else {
           toast({
@@ -60,10 +60,6 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const toggleMode = () => {
-    // This will be handled by the parent component
   };
 
   return (
