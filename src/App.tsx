@@ -42,8 +42,8 @@ const App = () => (
             </div>
           </SidebarProvider>
         </AuthWrapper>
-      </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
