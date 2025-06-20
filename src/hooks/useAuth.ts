@@ -40,7 +40,20 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
+    console.log('Starting sign out process...');
     const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Sign out error:', error);
+    } else {
+      console.log('Sign out successful');
+      // Clear any localStorage items related to onboarding
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('onboarding_completed_')) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
     return { error };
   };
 
