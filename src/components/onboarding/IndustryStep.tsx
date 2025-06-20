@@ -1,16 +1,17 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { industryOptions } from "@/data/onboardingOptions";
 
 interface IndustryStepProps {
   selectedIndustry: string | null;
   onSelect: (industry: string) => void;
   onComplete: () => void;
+  onBack: () => void;
   isLoading: boolean;
 }
 
-export const IndustryStep = ({ selectedIndustry, onSelect, onComplete, isLoading }: IndustryStepProps) => {
+export const IndustryStep = ({ selectedIndustry, onSelect, onComplete, onBack, isLoading }: IndustryStepProps) => {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
@@ -39,7 +40,17 @@ export const IndustryStep = ({ selectedIndustry, onSelect, onComplete, isLoading
         ))}
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-between pt-4">
+        <Button
+          onClick={onBack}
+          disabled={isLoading}
+          variant="outline"
+          className="px-6 text-gray-600 border-gray-300 hover:bg-gray-50"
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+
         <Button
           onClick={onComplete}
           disabled={!selectedIndustry || isLoading}
