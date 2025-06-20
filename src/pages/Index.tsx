@@ -1,51 +1,59 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Building2, Users, Handshake, BarChart3 } from "lucide-react";
+import { Globe } from "lucide-react";
+import { IndustrySelector } from "@/components/IndustrySelector";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-4xl mx-auto text-center">
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            Blue Octopus CRM
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
+            <div className="w-5 h-5 bg-white rounded-sm"></div>
+          </div>
+          <span className="text-xl font-semibold text-gray-900">monday CRM</span>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+            <Globe className="w-4 h-4 mr-2" />
+            Contact sales
+          </Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+            Get Started →
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex flex-col items-center justify-center px-6 py-16 max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-6 leading-tight">
+            The AI-powered CRM your<br />
+            team will love
           </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Manage your customers, deals, and contacts all in one place
+          
+          <p className="text-xl text-gray-600 mb-4 max-w-3xl mx-auto">
+            Sell faster with the most intuitive CRM - powered by AI and code-free automations.
+          </p>
+          
+          <p className="text-lg font-semibold text-gray-900 mb-12">
+            What would you like to manage with your CRM?
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <BarChart3 className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Dashboard</h3>
-            <p className="text-gray-600">View your business metrics</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <Building2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Customers</h3>
-            <p className="text-gray-600">Manage customer accounts</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <Handshake className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Deals</h3>
-            <p className="text-gray-600">Track sales opportunities</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <Users className="h-12 w-12 text-orange-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Contacts</h3>
-            <p className="text-gray-600">Maintain contact relationships</p>
-          </div>
-        </div>
+        {/* Industry Selection */}
+        <IndustrySelector />
 
-        <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-          <Link to="/dashboard">Get Started</Link>
-        </Button>
-      </div>
+        {/* CTA Button */}
+        <div className="mt-12">
+          <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg">
+            <Link to="/dashboard">Get Started →</Link>
+          </Button>
+        </div>
+      </main>
     </div>
   );
 };
