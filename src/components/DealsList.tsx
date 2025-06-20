@@ -9,18 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Handshake, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import EditDealDialog from "./EditDealDialog";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
-
-interface Deal {
-  id: string;
-  title: string;
-  value: number;
-  stage: string;
-  probability: number;
-  close_date: string | null;
-  customer?: {
-    name: string;
-  };
-}
+import { Deal } from "@/hooks/useDeals";
 
 interface DealsListProps {
   deals: Deal[];
