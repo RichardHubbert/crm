@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
 import Deals from "./pages/Deals";
+import DealView from "./pages/DealView";
 import Contacts from "./pages/Contacts";
 import NotFound from "./pages/NotFound";
 import { AppSidebar } from "./components/AppSidebar";
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/deals" element={<Deals />} />
+              <Route path="/deals/:id" element={<DealView />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

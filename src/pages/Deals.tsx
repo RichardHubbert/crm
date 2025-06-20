@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,38 +113,40 @@ const Deals = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredDeals.map((deal) => (
-            <Card key={deal.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center">
-                    <DollarSign className="mr-2 h-5 w-5" />
-                    {deal.title}
-                  </CardTitle>
-                  <Badge className={getStageColor(deal.stage)}>
-                    {deal.stage}
-                  </Badge>
-                </div>
-                <CardDescription>{deal.customer?.name || "No customer assigned"}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Value:</span>
-                    <span className="text-sm font-medium">${deal.value.toLocaleString()}</span>
+            <Link key={deal.id} to={`/deals/${deal.id}`}>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center">
+                      <DollarSign className="mr-2 h-5 w-5" />
+                      {deal.title}
+                    </CardTitle>
+                    <Badge className={getStageColor(deal.stage)}>
+                      {deal.stage}
+                    </Badge>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Probability:</span>
-                    <span className="text-sm font-medium">{deal.probability}%</span>
-                  </div>
-                  {deal.close_date && (
+                  <CardDescription>{deal.customer?.name || "No customer assigned"}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Close Date:</span>
-                      <span className="text-sm font-medium">{new Date(deal.close_date).toLocaleDateString()}</span>
+                      <span className="text-sm text-muted-foreground">Value:</span>
+                      <span className="text-sm font-medium">${deal.value.toLocaleString()}</span>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Probability:</span>
+                      <span className="text-sm font-medium">{deal.probability}%</span>
+                    </div>
+                    {deal.close_date && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Close Date:</span>
+                        <span className="text-sm font-medium">{new Date(deal.close_date).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
