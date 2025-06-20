@@ -13,7 +13,7 @@ const Index = () => {
           <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
             <div className="w-5 h-5 bg-white rounded-sm"></div>
           </div>
-          <span className="text-xl font-semibold text-gray-900">monday CRM</span>
+          <span className="text-xl font-semibold text-gray-900">ai design crm</span>
         </div>
         
         <div className="flex items-center space-x-4">

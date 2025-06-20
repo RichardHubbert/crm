@@ -46,7 +46,7 @@ export function AppSidebar() {
           <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
             <div className="w-5 h-5 bg-white rounded-sm"></div>
           </div>
-          <h2 className="text-lg font-semibold">monday CRM</h2>
+          <h2 className="text-lg font-semibold">ai design crm</h2>
         </div>
       </SidebarHeader>
       <SidebarContent>
