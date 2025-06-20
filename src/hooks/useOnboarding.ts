@@ -9,7 +9,14 @@ export const useOnboarding = () => {
   const { toast } = useToast();
   const { user } = useAuthContext();
 
-  const completeOnboarding = async (purpose: string, role: string, teamSize?: string, companySize?: string, industry?: string) => {
+  const completeOnboarding = async (
+    purpose: string, 
+    role: string, 
+    teamSize?: string, 
+    companySize?: string, 
+    industry?: string, 
+    referralSources?: string[]
+  ) => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -27,7 +34,8 @@ export const useOnboarding = () => {
         role,
         teamSize,
         companySize,
-        industry
+        industry,
+        referralSources
       });
       
       const { error } = await supabase
@@ -39,6 +47,7 @@ export const useOnboarding = () => {
           team_size: teamSize,
           company_size: companySize,
           industry: industry,
+          referral_sources: referralSources,
         });
 
       if (error) {
@@ -53,7 +62,6 @@ export const useOnboarding = () => {
 
       console.log('Onboarding data saved successfully');
       
-      // Mark onboarding as completed in localStorage
       localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
       
       toast({

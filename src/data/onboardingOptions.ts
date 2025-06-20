@@ -1,4 +1,3 @@
-
 export const purposeOptions = [
   { id: "work", label: "Work" },
   { id: "personal", label: "Personal" },
@@ -46,4 +45,23 @@ export const industryOptions = [
   { id: "marketing", label: "Marketing" },
   { id: "nonprofit", label: "Nonprofit" },
   { id: "other", label: "Other" }
+];
+
+export const referralSourceOptions = [
+  { id: 'friend', label: 'Friend' },
+  { id: 'youtube', label: 'YouTube' },
+  { id: 'facebook_instagram', label: 'Facebook / Instagram' },
+  { id: 'audio_streaming', label: 'Audio streaming services' },
+  { id: 'software_review', label: 'Software Review Site' },
+  { id: 'events_conferences', label: 'Events/conferences' },
+  { id: 'outdoors_ad', label: 'Outdoors ad (billboards / transport / airport)' },
+  { id: 'podcast', label: 'Podcast' },
+  { id: 'email', label: 'Email' },
+  { id: 'news_publications', label: 'News publications' },
+  { id: 'linkedin', label: 'LinkedIn' },
+  { id: 'tv_streaming', label: 'TV / Streaming' },
+  { id: 'online_search', label: 'Online search engines (e.g. Google, Bing, etc.)' },
+  { id: 'ai_chatbots', label: 'AI Chatbots (e.g. ChatGPT, Claude, etc.)' },
+  { id: 'consultant', label: 'Consultant' },
+  { id: 'other', label: 'Other' },
 ];

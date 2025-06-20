@@ -8,6 +8,7 @@ import { RoleStep } from "@/components/onboarding/RoleStep";
 import { CompanyInfoStep } from "@/components/onboarding/CompanyInfoStep";
 import { SizeStep } from "@/components/onboarding/SizeStep";
 import { IndustryStep } from "@/components/onboarding/IndustryStep";
+import { ReferralSourceStep } from "@/components/onboarding/ReferralSourceStep";
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -18,6 +19,7 @@ const Onboarding = () => {
   const [selectedTeamSize, setSelectedTeamSize] = useState<string | null>(null);
   const [selectedCompanySize, setSelectedCompanySize] = useState<string | null>(null);
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+  const [selectedReferralSources, setSelectedReferralSources] = useState<string[]>([]);
   const { user } = useAuthContext();
   const { completeOnboarding, isLoading } = useOnboarding();
 
@@ -53,33 +55,44 @@ const Onboarding = () => {
     setCurrentStep(3);
   };
 
-  const handleIndustryContinue = async () => {
-    if (selectedPurpose && selectedRole && selectedTeamSize && selectedCompanySize && selectedIndustry && user) {
-      console.log('Completing onboarding with:', {
-        purpose: selectedPurpose,
-        role: jobRole || selectedRole, // Use custom job role if provided, otherwise use selected role
-        teamSize: selectedTeamSize,
-        companySize: selectedCompanySize,
-        industry: selectedIndustry
-      });
-      
-      const success = await completeOnboarding(
-        selectedPurpose, 
-        jobRole || selectedRole, // Use custom job role if provided
-        selectedTeamSize, 
-        selectedCompanySize, 
-        selectedIndustry
-      );
-      
-      if (success) {
-        // Force reload to update onboarding state
-        window.location.reload();
-      }
+  const handleIndustryContinue = () => {
+    if (selectedIndustry) {
+      setCurrentStep(6);
     }
   };
 
   const handleIndustryBack = () => {
     setCurrentStep(4);
+  };
+
+  const handleReferralSourceContinue = async () => {
+    if (selectedPurpose && selectedRole && selectedTeamSize && selectedCompanySize && selectedIndustry && user) {
+      console.log('Completing onboarding with:', {
+        purpose: selectedPurpose,
+        role: jobRole || selectedRole,
+        teamSize: selectedTeamSize,
+        companySize: selectedCompanySize,
+        industry: selectedIndustry,
+        referralSources: selectedReferralSources
+      });
+      
+      const success = await completeOnboarding(
+        selectedPurpose, 
+        jobRole || selectedRole,
+        selectedTeamSize, 
+        selectedCompanySize, 
+        selectedIndustry,
+        selectedReferralSources
+      );
+      
+      if (success) {
+        window.location.reload();
+      }
+    }
+  };
+
+  const handleReferralSourceBack = () => {
+    setCurrentStep(5);
   };
 
   const renderCurrentStep = () => {
@@ -133,6 +146,16 @@ const Onboarding = () => {
             onSelect={setSelectedIndustry}
             onComplete={handleIndustryContinue}
             onBack={handleIndustryBack}
+            isLoading={isLoading}
+          />
+        );
+      case 6:
+        return (
+          <ReferralSourceStep
+            selectedSources={selectedReferralSources}
+            onSelect={setSelectedReferralSources}
+            onComplete={handleReferralSourceContinue}
+            onBack={handleReferralSourceBack}
             isLoading={isLoading}
           />
         );
