@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { AuthProvider } from "./components/AuthProvider";
 import AuthWrapper from "./components/AuthWrapper";
-import OnboardingWrapper from "./components/OnboardingWrapper";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -110,7 +109,7 @@ const AppRoutes = () => {
     );
   }
 
-  // For non-authenticated users, show landing page and auth flow
+  // For non-authenticated users, show landing page
   return (
     <Routes>
       <Route path="/" element={<Index />} />
