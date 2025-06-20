@@ -35,13 +35,15 @@ interface AddUserDialogProps {
   onUserAdded: () => void;
 }
 
+type UserRole = "admin" | "business" | "user";
+
 interface FormData {
   email: string;
   password: string;
   first_name: string;
   last_name: string;
   business_name: string;
-  role: string;
+  role: UserRole;
 }
 
 const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) => {

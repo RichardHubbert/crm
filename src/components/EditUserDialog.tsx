@@ -44,11 +44,13 @@ interface EditUserDialogProps {
   onUserUpdated: () => void;
 }
 
+type UserRole = "admin" | "business" | "user";
+
 interface FormData {
   first_name: string;
   last_name: string;
   business_name: string;
-  role: string;
+  role: UserRole;
 }
 
 const EditUserDialog = ({ open, onOpenChange, user, onUserUpdated }: EditUserDialogProps) => {
@@ -59,7 +61,7 @@ const EditUserDialog = ({ open, onOpenChange, user, onUserUpdated }: EditUserDia
       first_name: user.first_name || "",
       last_name: user.last_name || "",
       business_name: user.business_name || "",
-      role: user.primary_role || "user",
+      role: (user.primary_role as UserRole) || "user",
     },
   });
 

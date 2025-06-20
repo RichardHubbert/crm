@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -19,7 +20,15 @@ import { useAuthContext } from "./components/AuthProvider";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const queryClient = new QueryClient();
+// Create the QueryClient outside of the component to avoid recreation
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const ProtectedLayout = () => {
   return (
