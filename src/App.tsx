@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,6 +11,7 @@ import Customers from "./pages/Customers";
 import Deals from "./pages/Deals";
 import DealView from "./pages/DealView";
 import Contacts from "./pages/Contacts";
+import AdminUsers from "./pages/AdminUsers";
 import NotFound from "./pages/NotFound";
 import { AppSidebar } from "./components/AppSidebar";
 import { SidebarInset } from "./components/ui/sidebar";
@@ -33,6 +33,7 @@ const ProtectedLayout = () => {
             <Route path="/deals" element={<Deals />} />
             <Route path="/deals/:id" element={<DealView />} />
             <Route path="/contacts" element={<Contacts />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </SidebarInset>
