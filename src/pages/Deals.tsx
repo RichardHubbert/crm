@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Search, Handshake, Loader2, Upload } from "lucide-react";
 import { useDeals } from "@/hooks/useDeals";
+import { useToast } from "@/hooks/use-toast";
 import CSVImport from "@/components/CSVImport";
 import ViewToggle from "@/components/ViewToggle";
 import DealsList from "@/components/DealsList";
@@ -16,7 +17,8 @@ const Deals = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [view, setView] = useState<"grid" | "list">("grid");
-  const { deals, loading, error, refetch } = useDeals();
+  const { deals, loading, error, refetch, updateDeal, deleteDeal } = useDeals();
+  const { toast } = useToast();
 
   const filteredDeals = deals.filter(deal => {
     const matchesSearch = deal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -30,6 +32,40 @@ const Deals = () => {
 
   const handleDealAdded = () => {
     refetch();
+  };
+
+  const handleDealUpdated = async (id: string, data: any) => {
+    try {
+      await updateDeal(id, data);
+      toast({
+        title: "Success",
+        description: "Deal updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update deal",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const handleDealDeleted = async (id: string) => {
+    try {
+      await deleteDeal(id);
+      toast({
+        title: "Success",
+        description: "Deal deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete deal",
+        variant: "destructive",
+      });
+      throw error;
+    }
   };
 
   if (loading) {
@@ -118,7 +154,12 @@ const Deals = () => {
           </div>
         </div>
       ) : (
-        <DealsList deals={filteredDeals} view={view} />
+        <DealsList 
+          deals={filteredDeals} 
+          view={view} 
+          onDealUpdated={handleDealUpdated}
+          onDealDeleted={handleDealDeleted}
+        />
       )}
     </div>
   );

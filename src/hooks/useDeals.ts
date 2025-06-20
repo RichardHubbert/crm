@@ -67,6 +67,42 @@ export const useDeals = () => {
     }
   };
 
+  const updateDeal = async (id: string, dealData: Partial<Omit<Deal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'customer'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from('deals')
+        .update(dealData)
+        .eq('id', id)
+        .select(`
+          *,
+          customer:customers(name)
+        `)
+        .single();
+
+      if (error) throw error;
+      
+      setDeals(prev => prev.map(deal => deal.id === id ? data : deal));
+      return data;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to update deal');
+    }
+  };
+
+  const deleteDeal = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('deals')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setDeals(prev => prev.filter(deal => deal.id !== id));
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to delete deal');
+    }
+  };
+
   useEffect(() => {
     fetchDeals();
   }, []);
@@ -77,5 +113,7 @@ export const useDeals = () => {
     error,
     refetch: fetchDeals,
     addDeal,
+    updateDeal,
+    deleteDeal,
   };
 };
