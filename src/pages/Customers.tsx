@@ -10,6 +10,7 @@ import ViewToggle from "@/components/ViewToggle";
 import CustomersList from "@/components/CustomersList";
 import EditCustomerDialog from "@/components/EditCustomerDialog";
 import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
+import { UserInfo } from "@/components/UserInfo";
 import { toast } from "sonner";
 
 const Customers = () => {
@@ -89,6 +90,7 @@ const Customers = () => {
             <SidebarTrigger />
             <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
           </div>
+          <UserInfo />
         </div>
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin" />
@@ -105,6 +107,7 @@ const Customers = () => {
             <SidebarTrigger />
             <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
           </div>
+          <UserInfo />
         </div>
         <div className="flex items-center justify-center min-h-[400px]">
           <p className="text-red-500">Error: {error}</p>
@@ -120,43 +123,46 @@ const Customers = () => {
           <SidebarTrigger />
           <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
         </div>
-        <div className="flex space-x-2">
-          {filteredCustomers.length > 0 && (
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteAllDialog(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete All ({filteredCustomers.length})
-            </Button>
-          )}
-          {selectedCustomers.length > 0 && (
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete ({selectedCustomers.length})
-            </Button>
-          )}
-          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Upload className="mr-2 h-4 w-4" />
-                Import CSV
+        <div className="flex items-center space-x-4">
+          <UserInfo />
+          <div className="flex space-x-2">
+            {filteredCustomers.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteAllDialog(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete All ({filteredCustomers.length})
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Import Customer Data</DialogTitle>
-              </DialogHeader>
-              <CSVImport onImportComplete={handleImportComplete} />
-            </DialogContent>
-          </Dialog>
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Customer
-          </Button>
+            )}
+            {selectedCustomers.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete ({selectedCustomers.length})
+              </Button>
+            )}
+            <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import CSV
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Import Customer Data</DialogTitle>
+                </DialogHeader>
+                <CSVImport onImportComplete={handleImportComplete} />
+              </DialogContent>
+            </Dialog>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Customer
+            </Button>
+          </div>
         </div>
       </div>
 
