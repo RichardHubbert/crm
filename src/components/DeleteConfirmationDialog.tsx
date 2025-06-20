@@ -25,7 +25,7 @@ const DeleteConfirmationDialog = ({
   onConfirm,
   title,
   description,
-  isLoading = false
+  isLoading = false,
 }: DeleteConfirmationDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

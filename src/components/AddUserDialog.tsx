@@ -63,24 +63,39 @@ const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      // Call the admin_create_user function
-      const { data: result, error } = await supabase.rpc('admin_create_user', {
-        user_email: data.email,
-        user_password: data.password,
-        user_first_name: data.first_name || null,
-        user_last_name: data.last_name || null,
-        user_business_name: data.business_name || null,
-        user_role: data.role,
+      // Get the current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      // Call the Edge Function to create the user
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/admin-create-user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          first_name: data.first_name || null,
+          last_name: data.last_name || null,
+          business_name: data.business_name || null,
+          role: data.role,
+        }),
       });
 
-      if (error) {
-        throw error;
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to create user');
       }
 
       console.log('User creation result:', result);
       
-      // For now, show a message about the implementation requirement
-      toast.success("User creation initiated. Note: Full implementation requires edge function for Supabase Auth API integration.");
+      toast.success("User created successfully!");
       onUserAdded();
       onOpenChange(false);
       form.reset();
