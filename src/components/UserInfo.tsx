@@ -1,4 +1,3 @@
-
 import { useAuthContext } from "@/components/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,16 +9,19 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, ChevronDown } from "lucide-react";
+import { LogOut, User, ChevronDown, Shield } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export const UserInfo = () => {
   const { user, signOut, loading } = useAuthContext();
   const { profileData, loading: profileLoading } = useProfile();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
 
   console.log('UserInfo component rendered');
   console.log('Loading state:', loading);
   console.log('User state:', user);
+  console.log('Is admin:', isAdmin);
 
   const handleSignOut = async () => {
     console.log('Signing out user...');
@@ -54,16 +56,21 @@ export const UserInfo = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center space-x-3 bg-green-100 px-3 py-2 rounded-lg border border-green-300 hover:bg-green-200">
+        <Button variant="ghost" className={`flex items-center space-x-3 px-3 py-2 rounded-lg border hover:bg-green-200 ${isAdmin ? 'bg-purple-100 border-purple-300' : 'bg-green-100 border-green-300'}`}>
           <div className="flex items-center space-x-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src="" />
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
+              <AvatarFallback className={`text-xs ${isAdmin ? 'bg-purple-200 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium text-gray-900">{user.email}</p>
+              <div className="flex items-center space-x-1">
+                <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                {isAdmin && !adminLoading && (
+                  <Shield className="h-3 w-3 text-purple-600" />
+                )}
+              </div>
             </div>
           </div>
           <ChevronDown className="h-4 w-4 text-gray-600" />
@@ -74,17 +81,36 @@ export const UserInfo = () => {
           <div className="flex items-center space-x-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src="" />
-              <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
+              <AvatarFallback className={`text-xs ${isAdmin ? 'bg-purple-200 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium">{user.email}</p>
-              <p className="text-xs text-muted-foreground">Account</p>
+              <div className="flex items-center space-x-1">
+                <p className="font-medium">{user.email}</p>
+                {isAdmin && !adminLoading && (
+                  <Shield className="h-3 w-3 text-purple-600" />
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {adminLoading ? 'Checking permissions...' : (isAdmin ? 'Administrator' : 'Account')}
+              </p>
             </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        
+        {!adminLoading && isAdmin && (
+          <>
+            <DropdownMenuLabel className="text-xs font-medium text-purple-600">
+              ADMIN PRIVILEGES
+            </DropdownMenuLabel>
+            <div className="px-2 py-1 text-sm">
+              <p className="text-xs text-muted-foreground">You have administrator access</p>
+            </div>
+            <DropdownMenuSeparator />
+          </>
+        )}
         
         {profileLoading ? (
           <DropdownMenuItem disabled>
