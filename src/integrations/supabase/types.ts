@@ -617,6 +617,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       admin_create_user: {
         Args: {
           user_email: string
@@ -632,12 +639,26 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      admin_remove_user_role: {
+        Args: {
+          target_user_id: string
+          role_to_remove: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       admin_update_user_profile: {
         Args: {
           target_user_id: string
           new_first_name?: string
           new_last_name?: string
           new_business_name?: string
+        }
+        Returns: boolean
+      }
+      admin_update_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
       }
