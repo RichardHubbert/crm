@@ -23,10 +23,30 @@ const roleOptions = [
   { id: "vp", label: "VP" }
 ];
 
+const teamSizeOptions = [
+  { id: "just_me", label: "Just me" },
+  { id: "2_10", label: "2-10" },
+  { id: "11_50", label: "11-50" },
+  { id: "51_200", label: "51-200" },
+  { id: "201_1000", label: "201-1,000" },
+  { id: "1000_plus", label: "1,000+" }
+];
+
+const companySizeOptions = [
+  { id: "just_me", label: "Just me" },
+  { id: "2_10", label: "2-10" },
+  { id: "11_50", label: "11-50" },
+  { id: "51_200", label: "51-200" },
+  { id: "201_1000", label: "201-1,000" },
+  { id: "1000_plus", label: "1,000+" }
+];
+
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [selectedTeamSize, setSelectedTeamSize] = useState<string | null>(null);
+  const [selectedCompanySize, setSelectedCompanySize] = useState<string | null>(null);
   const { user } = useAuthContext();
   const { completeOnboarding, isLoading } = useOnboarding();
 
@@ -36,11 +56,22 @@ const Onboarding = () => {
     }
   };
 
-  const handleRoleContinue = async () => {
-    if (selectedPurpose && selectedRole && user) {
-      console.log('Completing onboarding with purpose:', selectedPurpose, 'and role:', selectedRole);
+  const handleRoleContinue = () => {
+    if (selectedRole) {
+      setCurrentStep(3);
+    }
+  };
+
+  const handleSizeContinue = async () => {
+    if (selectedPurpose && selectedRole && selectedTeamSize && selectedCompanySize && user) {
+      console.log('Completing onboarding with:', {
+        purpose: selectedPurpose,
+        role: selectedRole,
+        teamSize: selectedTeamSize,
+        companySize: selectedCompanySize
+      });
       
-      const success = await completeOnboarding(selectedPurpose, selectedRole);
+      const success = await completeOnboarding(selectedPurpose, selectedRole, selectedTeamSize, selectedCompanySize);
       
       if (success) {
         // Force reload to update onboarding state
@@ -160,6 +191,74 @@ const Onboarding = () => {
                 <Button
                   onClick={handleRoleContinue}
                   disabled={!selectedRole || isLoading}
+                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
+                  variant="secondary"
+                >
+                  Continue
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="space-y-8">
+              <div className="text-center space-y-4">
+                <h1 className="text-2xl font-medium text-gray-900">
+                  How big is your team?
+                </h1>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 mb-8">
+                {teamSizeOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setSelectedTeamSize(option.id)}
+                    disabled={isLoading}
+                    className={`
+                      px-4 py-3 rounded-full border text-center font-medium transition-all
+                      ${selectedTeamSize === option.id
+                        ? 'border-teal-500 bg-teal-50 text-teal-700'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                      }
+                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="text-center space-y-4">
+                <h1 className="text-2xl font-medium text-gray-900">
+                  How big is your company?
+                </h1>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {companySizeOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setSelectedCompanySize(option.id)}
+                    disabled={isLoading}
+                    className={`
+                      px-4 py-3 rounded-full border text-center font-medium transition-all
+                      ${selectedCompanySize === option.id
+                        ? 'border-teal-500 bg-teal-50 text-teal-700'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                      }
+                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button
+                  onClick={handleSizeContinue}
+                  disabled={!selectedTeamSize || !selectedCompanySize || isLoading}
                   className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
                   variant="secondary"
                 >

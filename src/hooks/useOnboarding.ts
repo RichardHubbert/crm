@@ -9,7 +9,7 @@ export const useOnboarding = () => {
   const { toast } = useToast();
   const { user } = useAuthContext();
 
-  const completeOnboarding = async (purpose: string, role: string) => {
+  const completeOnboarding = async (purpose: string, role: string, teamSize?: string, companySize?: string) => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -22,7 +22,12 @@ export const useOnboarding = () => {
     setIsLoading(true);
     
     try {
-      console.log('Saving onboarding data for user:', user.id, 'with purpose:', purpose, 'and role:', role);
+      console.log('Saving onboarding data for user:', user.id, 'with data:', {
+        purpose,
+        role,
+        teamSize,
+        companySize
+      });
       
       const { error } = await supabase
         .from('onboarding_data')
@@ -30,6 +35,8 @@ export const useOnboarding = () => {
           user_id: user.id,
           purpose: purpose,
           role: role,
+          team_size: teamSize,
+          company_size: companySize,
         });
 
       if (error) {

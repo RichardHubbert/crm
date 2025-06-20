@@ -221,26 +221,32 @@ export type Database = {
       }
       onboarding_data: {
         Row: {
+          company_size: string | null
           completed_at: string
           created_at: string
           id: string
           purpose: string
+          team_size: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          company_size?: string | null
           completed_at?: string
           created_at?: string
           id?: string
           purpose: string
+          team_size?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          company_size?: string | null
           completed_at?: string
           created_at?: string
           id?: string
           purpose?: string
+          team_size?: string | null
           updated_at?: string
           user_id?: string
         }
