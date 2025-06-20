@@ -41,12 +41,27 @@ const companySizeOptions = [
   { id: "1000_plus", label: "1,000+" }
 ];
 
+const industryOptions = [
+  { id: "technology", label: "Technology" },
+  { id: "healthcare", label: "Healthcare" },
+  { id: "finance", label: "Finance" },
+  { id: "education", label: "Education" },
+  { id: "retail", label: "Retail" },
+  { id: "manufacturing", label: "Manufacturing" },
+  { id: "real_estate", label: "Real Estate" },
+  { id: "consulting", label: "Consulting" },
+  { id: "marketing", label: "Marketing" },
+  { id: "nonprofit", label: "Nonprofit" },
+  { id: "other", label: "Other" }
+];
+
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [selectedTeamSize, setSelectedTeamSize] = useState<string | null>(null);
   const [selectedCompanySize, setSelectedCompanySize] = useState<string | null>(null);
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const { user } = useAuthContext();
   const { completeOnboarding, isLoading } = useOnboarding();
 
@@ -62,16 +77,23 @@ const Onboarding = () => {
     }
   };
 
-  const handleSizeContinue = async () => {
-    if (selectedPurpose && selectedRole && selectedTeamSize && selectedCompanySize && user) {
+  const handleSizeContinue = () => {
+    if (selectedTeamSize && selectedCompanySize) {
+      setCurrentStep(4);
+    }
+  };
+
+  const handleIndustryContinue = async () => {
+    if (selectedPurpose && selectedRole && selectedTeamSize && selectedCompanySize && selectedIndustry && user) {
       console.log('Completing onboarding with:', {
         purpose: selectedPurpose,
         role: selectedRole,
         teamSize: selectedTeamSize,
-        companySize: selectedCompanySize
+        companySize: selectedCompanySize,
+        industry: selectedIndustry
       });
       
-      const success = await completeOnboarding(selectedPurpose, selectedRole, selectedTeamSize, selectedCompanySize);
+      const success = await completeOnboarding(selectedPurpose, selectedRole, selectedTeamSize, selectedCompanySize, selectedIndustry);
       
       if (success) {
         // Force reload to update onboarding state
@@ -262,6 +284,48 @@ const Onboarding = () => {
                   className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
                   variant="secondary"
                 >
+                  Continue
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 4 && (
+            <div className="space-y-8">
+              <div className="text-center space-y-4">
+                <h1 className="text-2xl font-medium text-gray-900">
+                  What industry are you in?
+                </h1>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {industryOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setSelectedIndustry(option.id)}
+                    disabled={isLoading}
+                    className={`
+                      px-4 py-3 rounded-lg border text-center font-medium transition-all
+                      ${selectedIndustry === option.id
+                        ? 'border-teal-500 bg-teal-50 text-teal-700'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                      }
+                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button
+                  onClick={handleIndustryContinue}
+                  disabled={!selectedIndustry || isLoading}
+                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
+                  variant="secondary"
+                >
                   {isLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
@@ -269,7 +333,7 @@ const Onboarding = () => {
                     </>
                   ) : (
                     <>
-                      Continue
+                      Complete Setup
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </>
                   )}

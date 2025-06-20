@@ -9,7 +9,7 @@ export const useOnboarding = () => {
   const { toast } = useToast();
   const { user } = useAuthContext();
 
-  const completeOnboarding = async (purpose: string, role: string, teamSize?: string, companySize?: string) => {
+  const completeOnboarding = async (purpose: string, role: string, teamSize?: string, companySize?: string, industry?: string) => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -26,7 +26,8 @@ export const useOnboarding = () => {
         purpose,
         role,
         teamSize,
-        companySize
+        companySize,
+        industry
       });
       
       const { error } = await supabase
@@ -37,6 +38,7 @@ export const useOnboarding = () => {
           role: role,
           team_size: teamSize,
           company_size: companySize,
+          industry: industry,
         });
 
       if (error) {

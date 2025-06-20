@@ -225,6 +225,7 @@ export type Database = {
           completed_at: string
           created_at: string
           id: string
+          industry: string | null
           purpose: string
           team_size: string | null
           updated_at: string
@@ -235,6 +236,7 @@ export type Database = {
           completed_at?: string
           created_at?: string
           id?: string
+          industry?: string | null
           purpose: string
           team_size?: string | null
           updated_at?: string
@@ -245,6 +247,7 @@ export type Database = {
           completed_at?: string
           created_at?: string
           id?: string
+          industry?: string | null
           purpose?: string
           team_size?: string | null
           updated_at?: string
