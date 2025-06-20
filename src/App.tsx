@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { AuthProvider } from "./components/AuthProvider";
-import AuthWrapper from "./components/AuthWrapper";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -22,7 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
-const AppRoutes = () => {
+const ProtectedRoutes = () => {
   const { user } = useAuthContext();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
 
@@ -95,13 +94,12 @@ const AppRoutes = () => {
           <AppSidebar />
           <SidebarInset>
             <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/deals" element={<Deals />} />
               <Route path="/deals/:id" element={<DealView />} />
               <Route path="/contacts" element={<Contacts />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </SidebarInset>
         </div>
@@ -109,11 +107,38 @@ const AppRoutes = () => {
     );
   }
 
-  // For non-authenticated users, show landing page
+  // If not authenticated, redirect to landing page
+  return <Navigate to="/" replace />;
+};
+
+const AppRoutes = () => {
+  const { user, loading } = useAuthContext();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-2">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
+      {/* Public route - landing page */}
       <Route path="/" element={<Index />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      
+      {/* Protected routes */}
+      <Route path="/dashboard" element={<ProtectedRoutes />} />
+      <Route path="/customers" element={<ProtectedRoutes />} />
+      <Route path="/deals" element={<ProtectedRoutes />} />
+      <Route path="/deals/:id" element={<ProtectedRoutes />} />
+      <Route path="/contacts" element={<ProtectedRoutes />} />
+      
+      {/* Catch all - redirect to landing page */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
@@ -124,9 +149,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthWrapper>
-          <AppRoutes />
-        </AuthWrapper>
+        <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
   </QueryClientProvider>
