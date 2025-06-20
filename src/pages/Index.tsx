@@ -4,23 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 import { IndustrySelector } from "@/components/IndustrySelector";
 import { useAuthContext } from "@/components/AuthProvider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthWrapper from "@/components/AuthWrapper";
 
 const Index = () => {
   const { user } = useAuthContext();
   const [showAuth, setShowAuth] = useState(false);
+  const navigate = useNavigate();
 
-  // If user is already authenticated, they shouldn't see this page
-  // The routing will handle redirecting them appropriately
-  
+  // If user is already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   const handleGetStarted = () => {
     setShowAuth(true);
   };
 
   // Show authentication modal when user clicks Get Started
   if (showAuth) {
-    return <AuthWrapper>{null}</AuthWrapper>;
+    return <AuthWrapper><div /></AuthWrapper>;
   }
 
   return (
