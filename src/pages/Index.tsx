@@ -5,11 +5,10 @@ import { Globe } from "lucide-react";
 import { IndustrySelector } from "@/components/IndustrySelector";
 import { useAuthContext } from "@/components/AuthProvider";
 import { useState, useEffect } from "react";
-import AuthWrapper from "@/components/AuthWrapper";
+import { AuthDialog } from "@/components/AuthDialog";
 
 const Index = () => {
   const { user } = useAuthContext();
-  const [showAuth, setShowAuth] = useState(false);
   const navigate = useNavigate();
 
   // If user is already authenticated, redirect to dashboard
@@ -18,15 +17,6 @@ const Index = () => {
       navigate('/dashboard');
     }
   }, [user, navigate]);
-
-  const handleGetStarted = () => {
-    setShowAuth(true);
-  };
-
-  // Show authentication modal when user clicks Get Started
-  if (showAuth) {
-    return <AuthWrapper><div /></AuthWrapper>;
-  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -44,12 +34,18 @@ const Index = () => {
             <Globe className="w-4 h-4 mr-2" />
             Contact sales
           </Button>
-          <Button 
-            onClick={handleGetStarted}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-          >
-            Get Started →
-          </Button>
+          
+          <AuthDialog mode="signin">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              Sign In
+            </Button>
+          </AuthDialog>
+          
+          <AuthDialog mode="signup">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+              Sign Up
+            </Button>
+          </AuthDialog>
         </div>
       </header>
 
@@ -73,15 +69,16 @@ const Index = () => {
         {/* Industry Selection */}
         <IndustrySelector />
 
-        {/* CTA Button - This now leads to authentication */}
+        {/* CTA Button */}
         <div className="mt-12">
-          <Button 
-            size="lg" 
-            onClick={handleGetStarted}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
-          >
-            Get Started →
-          </Button>
+          <AuthDialog mode="signup">
+            <Button 
+              size="lg" 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
+            >
+              Get Started →
+            </Button>
+          </AuthDialog>
         </div>
       </main>
     </div>
