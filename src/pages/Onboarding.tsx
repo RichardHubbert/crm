@@ -13,17 +13,28 @@ const purposeOptions = [
   { id: "nonprofits", label: "Nonprofits" }
 ];
 
+const roleOptions = [
+  { id: "business_owner", label: "Business owner" },
+  { id: "team_leader", label: "Team leader" },
+  { id: "team_member", label: "Team member" },
+  { id: "freelancer", label: "Freelancer" },
+  { id: "director", label: "Director" },
+  { id: "c_level", label: "C-Level" },
+  { id: "vp", label: "VP" }
+];
+
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const { user } = useAuthContext();
   const { completeOnboarding, isLoading } = useOnboarding();
 
   const handleContinue = async () => {
-    if (currentStep === 1 && selectedPurpose && user) {
-      console.log('Completing onboarding with purpose:', selectedPurpose);
+    if (currentStep === 1 && selectedPurpose && selectedRole && user) {
+      console.log('Completing onboarding with purpose:', selectedPurpose, 'and role:', selectedRole);
       
-      const success = await completeOnboarding(selectedPurpose);
+      const success = await completeOnboarding(selectedPurpose, selectedRole);
       
       if (success) {
         // Force reload to update onboarding state
@@ -75,10 +86,58 @@ const Onboarding = () => {
                 ))}
               </div>
 
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-xl font-medium text-gray-900">
+                    What best describes your current role?
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {roleOptions.slice(0, 4).map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => setSelectedRole(option.id)}
+                      disabled={isLoading}
+                      className={`
+                        px-4 py-3 rounded-full border text-center font-medium transition-all
+                        ${selectedRole === option.id
+                          ? 'border-teal-500 bg-teal-50 text-teal-700'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        }
+                        ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {roleOptions.slice(4).map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => setSelectedRole(option.id)}
+                      disabled={isLoading}
+                      className={`
+                        px-4 py-3 rounded-full border text-center font-medium transition-all
+                        ${selectedRole === option.id
+                          ? 'border-teal-500 bg-teal-50 text-teal-700'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        }
+                        ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex justify-end pt-4">
                 <Button
                   onClick={handleContinue}
-                  disabled={!selectedPurpose || isLoading}
+                  disabled={!selectedPurpose || !selectedRole || isLoading}
                   className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
                   variant="secondary"
                 >
