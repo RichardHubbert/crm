@@ -1,59 +1,12 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
 import { useAuthContext } from "@/components/AuthProvider";
 import { useOnboarding } from "@/hooks/useOnboarding";
-
-const purposeOptions = [
-  { id: "work", label: "Work" },
-  { id: "personal", label: "Personal" },
-  { id: "school", label: "School" },
-  { id: "nonprofits", label: "Nonprofits" }
-];
-
-const roleOptions = [
-  { id: "business_owner", label: "Business owner" },
-  { id: "team_leader", label: "Team leader" },
-  { id: "team_member", label: "Team member" },
-  { id: "freelancer", label: "Freelancer" },
-  { id: "director", label: "Director" },
-  { id: "c_level", label: "C-Level" },
-  { id: "vp", label: "VP" }
-];
-
-const teamSizeOptions = [
-  { id: "just_me", label: "Just me" },
-  { id: "2_10", label: "2-10" },
-  { id: "11_50", label: "11-50" },
-  { id: "51_200", label: "51-200" },
-  { id: "201_1000", label: "201-1,000" },
-  { id: "1000_plus", label: "1,000+" }
-];
-
-const companySizeOptions = [
-  { id: "just_me", label: "Just me" },
-  { id: "2_10", label: "2-10" },
-  { id: "11_50", label: "11-50" },
-  { id: "51_200", label: "51-200" },
-  { id: "201_1000", label: "201-1,000" },
-  { id: "1000_plus", label: "1,000+" }
-];
-
-const industryOptions = [
-  { id: "technology", label: "Technology" },
-  { id: "healthcare", label: "Healthcare" },
-  { id: "finance", label: "Finance" },
-  { id: "education", label: "Education" },
-  { id: "retail", label: "Retail" },
-  { id: "manufacturing", label: "Manufacturing" },
-  { id: "real_estate", label: "Real Estate" },
-  { id: "consulting", label: "Consulting" },
-  { id: "marketing", label: "Marketing" },
-  { id: "nonprofit", label: "Nonprofit" },
-  { id: "other", label: "Other" }
-];
+import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
+import { PurposeStep } from "@/components/onboarding/PurposeStep";
+import { RoleStep } from "@/components/onboarding/RoleStep";
+import { SizeStep } from "@/components/onboarding/SizeStep";
+import { IndustryStep } from "@/components/onboarding/IndustryStep";
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -102,291 +55,55 @@ const Onboarding = () => {
     }
   };
 
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <PurposeStep
+            selectedPurpose={selectedPurpose}
+            onSelect={setSelectedPurpose}
+            onContinue={handlePurposeContinue}
+            isLoading={isLoading}
+          />
+        );
+      case 2:
+        return (
+          <RoleStep
+            selectedRole={selectedRole}
+            onSelect={setSelectedRole}
+            onContinue={handleRoleContinue}
+            isLoading={isLoading}
+          />
+        );
+      case 3:
+        return (
+          <SizeStep
+            selectedTeamSize={selectedTeamSize}
+            selectedCompanySize={selectedCompanySize}
+            onSelectTeamSize={setSelectedTeamSize}
+            onSelectCompanySize={setSelectedCompanySize}
+            onContinue={handleSizeContinue}
+            isLoading={isLoading}
+          />
+        );
+      case 4:
+        return (
+          <IndustryStep
+            selectedIndustry={selectedIndustry}
+            onSelect={setSelectedIndustry}
+            onComplete={handleIndustryContinue}
+            isLoading={isLoading}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
-              <div className="w-5 h-5 bg-white rounded-sm"></div>
-            </div>
-            <span className="text-xl font-semibold text-gray-900 ml-3">ai design CRM</span>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <Card className="p-8 bg-white shadow-sm">
-          {currentStep === 1 && (
-            <div className="space-y-8">
-              <div className="text-center space-y-4">
-                <h1 className="text-2xl font-medium text-gray-900">
-                  Hey there, what brings you here today?
-                </h1>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {purposeOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setSelectedPurpose(option.id)}
-                    disabled={isLoading}
-                    className={`
-                      p-4 rounded-lg border-2 text-left font-medium transition-all
-                      ${selectedPurpose === option.id
-                        ? 'border-teal-500 bg-teal-50 text-teal-700'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                      }
-                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button
-                  onClick={handlePurposeContinue}
-                  disabled={!selectedPurpose || isLoading}
-                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
-                  variant="secondary"
-                >
-                  Continue
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-8">
-              <div className="text-center space-y-4">
-                <h1 className="text-2xl font-medium text-gray-900">
-                  What best describes your current role?
-                </h1>
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  {roleOptions.slice(0, 4).map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setSelectedRole(option.id)}
-                      disabled={isLoading}
-                      className={`
-                        px-4 py-3 rounded-full border text-center font-medium transition-all
-                        ${selectedRole === option.id
-                          ? 'border-teal-500 bg-teal-50 text-teal-700'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                        }
-                        ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                      `}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  {roleOptions.slice(4).map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setSelectedRole(option.id)}
-                      disabled={isLoading}
-                      className={`
-                        px-4 py-3 rounded-full border text-center font-medium transition-all
-                        ${selectedRole === option.id
-                          ? 'border-teal-500 bg-teal-50 text-teal-700'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                        }
-                        ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                      `}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button
-                  onClick={handleRoleContinue}
-                  disabled={!selectedRole || isLoading}
-                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
-                  variant="secondary"
-                >
-                  Continue
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 3 && (
-            <div className="space-y-8">
-              <div className="text-center space-y-4">
-                <h1 className="text-2xl font-medium text-gray-900">
-                  How big is your team?
-                </h1>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 mb-8">
-                {teamSizeOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setSelectedTeamSize(option.id)}
-                    disabled={isLoading}
-                    className={`
-                      px-4 py-3 rounded-full border text-center font-medium transition-all
-                      ${selectedTeamSize === option.id
-                        ? 'border-teal-500 bg-teal-50 text-teal-700'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                      }
-                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="text-center space-y-4">
-                <h1 className="text-2xl font-medium text-gray-900">
-                  How big is your company?
-                </h1>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {companySizeOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setSelectedCompanySize(option.id)}
-                    disabled={isLoading}
-                    className={`
-                      px-4 py-3 rounded-full border text-center font-medium transition-all
-                      ${selectedCompanySize === option.id
-                        ? 'border-teal-500 bg-teal-50 text-teal-700'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                      }
-                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button
-                  onClick={handleSizeContinue}
-                  disabled={!selectedTeamSize || !selectedCompanySize || isLoading}
-                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
-                  variant="secondary"
-                >
-                  Continue
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 4 && (
-            <div className="space-y-8">
-              <div className="text-center space-y-4">
-                <h1 className="text-2xl font-medium text-gray-900">
-                  What industry are you in?
-                </h1>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {industryOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setSelectedIndustry(option.id)}
-                    disabled={isLoading}
-                    className={`
-                      px-4 py-3 rounded-lg border text-center font-medium transition-all
-                      ${selectedIndustry === option.id
-                        ? 'border-teal-500 bg-teal-50 text-teal-700'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                      }
-                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button
-                  onClick={handleIndustryContinue}
-                  disabled={!selectedIndustry || isLoading}
-                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
-                  variant="secondary"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
-                      Setting up...
-                    </>
-                  ) : (
-                    <>
-                      Complete Setup
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* Decorative elements - floating cards on the right */}
-        <div className="fixed top-1/2 right-8 transform -translate-y-1/2 space-y-4 hidden lg:block">
-          <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-            </div>
-            <div className="flex-1">
-              <div className="h-2 bg-gray-200 rounded mb-1"></div>
-              <div className="h-2 bg-gray-100 rounded w-2/3"></div>
-            </div>
-          </div>
-          
-          <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3 ml-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-500 rounded-full flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-            </div>
-            <div className="flex-1">
-              <div className="h-2 bg-gray-200 rounded mb-1"></div>
-              <div className="h-2 bg-gray-100 rounded w-3/4"></div>
-            </div>
-          </div>
-
-          <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-            </div>
-            <div className="flex-1">
-              <div className="h-2 bg-gray-200 rounded mb-1"></div>
-              <div className="h-2 bg-gray-100 rounded w-1/2"></div>
-            </div>
-          </div>
-
-          <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3 ml-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-            </div>
-            <div className="flex-1">
-              <div className="h-2 bg-gray-200 rounded mb-1"></div>
-              <div className="h-2 bg-gray-100 rounded w-2/3"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <OnboardingLayout>
+      {renderCurrentStep()}
+    </OnboardingLayout>
   );
 };
 
