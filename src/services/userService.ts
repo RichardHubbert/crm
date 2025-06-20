@@ -10,8 +10,8 @@ export const createUser = async (data: UserFormData) => {
     throw new Error('No authentication token available');
   }
 
-  // Call the Edge Function to create the user using the hardcoded URL
-  const response = await fetch(`https://nnxdtpnrwgcknhpyhowr.supabase.co/functions/v1/admin-create-user`, {
+  // Call the Edge Function to create the user using the new project URL
+  const response = await fetch(`https://nxiejogrelqxxkyhcwgi.supabase.co/functions/v1/admin-create-user`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${session.access_token}`,
