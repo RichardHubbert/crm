@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,9 +7,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Building2, Users, Handshake, DollarSign, Upload } from "lucide-react";
 import CSVImport from "@/components/CSVImport";
 import { UserInfo } from "@/components/UserInfo";
+import { useCustomers } from "@/hooks/useCustomers";
+import { useDeals } from "@/hooks/useDeals";
+import { useContacts } from "@/hooks/useContacts";
 
 const Dashboard = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const { customers } = useCustomers();
+  const { deals } = useDeals();
+  const { contacts } = useContacts();
 
   console.log('Dashboard component rendering');
 
@@ -16,6 +23,14 @@ const Dashboard = () => {
     setShowImportDialog(false);
     // Could add a refetch of dashboard data here if needed
   };
+
+  // Calculate metrics from real data
+  const totalCustomers = customers.length;
+  const activeDeals = deals.filter(deal => 
+    deal.stage !== 'Closed Won' && deal.stage !== 'Closed Lost'
+  ).length;
+  const totalContacts = contacts.length;
+  const totalRevenue = customers.reduce((sum, customer) => sum + (customer.revenue || 0), 0);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -52,9 +67,9 @@ const Dashboard = () => {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">254</div>
+            <div className="text-2xl font-bold">{totalCustomers}</div>
             <p className="text-xs text-muted-foreground">
-              +12% from last month
+              Active customers in your CRM
             </p>
           </CardContent>
         </Card>
@@ -67,9 +82,9 @@ const Dashboard = () => {
             <Handshake className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45</div>
+            <div className="text-2xl font-bold">{activeDeals}</div>
             <p className="text-xs text-muted-foreground">
-              +8% from last month
+              Deals in progress
             </p>
           </CardContent>
         </Card>
@@ -80,9 +95,9 @@ const Dashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
+            <div className="text-2xl font-bold">{totalContacts}</div>
             <p className="text-xs text-muted-foreground">
-              +5% from last month
+              People in your network
             </p>
           </CardContent>
         </Card>
@@ -95,9 +110,9 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$124,500</div>
+            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              +15% from last month
+              Total customer revenue
             </p>
           </CardContent>
         </Card>
@@ -112,27 +127,39 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div>
-                <p className="text-sm font-medium">New customer added: Acme Corp</p>
-                <p className="text-xs text-muted-foreground">2 hours ago</p>
+            {customers.length > 0 ? (
+              <>
+                <div className="flex items-center space-x-4">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div>
+                    <p className="text-sm font-medium">Customer added: {customers[0]?.name}</p>
+                    <p className="text-xs text-muted-foreground">Recently</p>
+                  </div>
+                </div>
+                {deals.length > 0 && (
+                  <div className="flex items-center space-x-4">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div>
+                      <p className="text-sm font-medium">Deal created: {deals[0]?.title}</p>
+                      <p className="text-xs text-muted-foreground">Recently</p>
+                    </div>
+                  </div>
+                )}
+                {contacts.length > 0 && (
+                  <div className="flex items-center space-x-4">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <div>
+                      <p className="text-sm font-medium">Contact added: {contacts[0]?.name}</p>
+                      <p className="text-xs text-muted-foreground">Recently</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <p>No recent activity. Start by adding customers, deals, or contacts!</p>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div>
-                <p className="text-sm font-medium">Deal closed: $25,000</p>
-                <p className="text-xs text-muted-foreground">4 hours ago</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              <div>
-                <p className="text-sm font-medium">Follow-up scheduled with Tech Solutions</p>
-                <p className="text-xs text-muted-foreground">6 hours ago</p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
         
@@ -145,22 +172,38 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Prospecting</span>
-                <span className="text-sm font-medium">12 deals</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Qualification</span>
-                <span className="text-sm font-medium">8 deals</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Proposal</span>
-                <span className="text-sm font-medium">5 deals</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Negotiation</span>
-                <span className="text-sm font-medium">3 deals</span>
-              </div>
+              {deals.length > 0 ? (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Prospecting</span>
+                    <span className="text-sm font-medium">
+                      {deals.filter(d => d.stage === 'Prospecting').length} deals
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Qualification</span>
+                    <span className="text-sm font-medium">
+                      {deals.filter(d => d.stage === 'Qualification').length} deals
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Proposal</span>
+                    <span className="text-sm font-medium">
+                      {deals.filter(d => d.stage === 'Proposal').length} deals
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Negotiation</span>
+                    <span className="text-sm font-medium">
+                      {deals.filter(d => d.stage === 'Negotiation').length} deals
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <p>No deals yet. Create your first deal to see the pipeline!</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
