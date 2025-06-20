@@ -3,13 +3,14 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, Building2, Loader2, Upload, Trash2 } from "lucide-react";
+import { Search, Building2, Loader2, Upload, Trash2 } from "lucide-react";
 import { useCustomers, Customer } from "@/hooks/useCustomers";
 import CSVImport from "@/components/CSVImport";
 import ViewToggle from "@/components/ViewToggle";
 import CustomersList from "@/components/CustomersList";
 import EditCustomerDialog from "@/components/EditCustomerDialog";
 import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
+import AddCustomerDialog from "@/components/AddCustomerDialog";
 import { UserInfo } from "@/components/UserInfo";
 import { toast } from "sonner";
 
@@ -31,6 +32,10 @@ const Customers = () => {
 
   const handleImportComplete = () => {
     setShowImportDialog(false);
+    refetch();
+  };
+
+  const handleCustomerAdded = () => {
     refetch();
   };
 
@@ -158,10 +163,7 @@ const Customers = () => {
                 <CSVImport onImportComplete={handleImportComplete} />
               </DialogContent>
             </Dialog>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Customer
-            </Button>
+            <AddCustomerDialog onCustomerAdded={handleCustomerAdded} />
           </div>
         </div>
       </div>
