@@ -30,8 +30,14 @@ const Onboarding = () => {
   const { user } = useAuthContext();
   const { completeOnboarding, isLoading } = useOnboarding();
 
-  const handleContinue = async () => {
-    if (currentStep === 1 && selectedPurpose && selectedRole && user) {
+  const handlePurposeContinue = () => {
+    if (selectedPurpose) {
+      setCurrentStep(2);
+    }
+  };
+
+  const handleRoleContinue = async () => {
+    if (selectedPurpose && selectedRole && user) {
       console.log('Completing onboarding with purpose:', selectedPurpose, 'and role:', selectedRole);
       
       const success = await completeOnboarding(selectedPurpose, selectedRole);
@@ -86,13 +92,29 @@ const Onboarding = () => {
                 ))}
               </div>
 
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-xl font-medium text-gray-900">
-                    What best describes your current role?
-                  </h2>
-                </div>
+              <div className="flex justify-end pt-4">
+                <Button
+                  onClick={handlePurposeContinue}
+                  disabled={!selectedPurpose || isLoading}
+                  className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
+                  variant="secondary"
+                >
+                  Continue
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
 
+          {currentStep === 2 && (
+            <div className="space-y-8">
+              <div className="text-center space-y-4">
+                <h1 className="text-2xl font-medium text-gray-900">
+                  What best describes your current role?
+                </h1>
+              </div>
+
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   {roleOptions.slice(0, 4).map((option) => (
                     <button
@@ -136,8 +158,8 @@ const Onboarding = () => {
 
               <div className="flex justify-end pt-4">
                 <Button
-                  onClick={handleContinue}
-                  disabled={!selectedPurpose || !selectedRole || isLoading}
+                  onClick={handleRoleContinue}
+                  disabled={!selectedRole || isLoading}
                   className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
                   variant="secondary"
                 >
