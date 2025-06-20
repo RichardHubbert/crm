@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,6 +19,7 @@ import { SidebarInset } from "./components/ui/sidebar";
 import { useAuthContext } from "./components/AuthProvider";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsAdmin } from "./hooks/useIsAdmin";
 
 // Create the QueryClient outside of the component to avoid recreation
 const queryClient = new QueryClient({
@@ -54,12 +54,21 @@ const ProtectedLayout = () => {
 
 const ProtectedRoutes = () => {
   const { user } = useAuthContext();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       if (user) {
         console.log('Checking onboarding status for user:', user.id);
+        console.log('User is admin:', isAdmin);
+        
+        // If user is admin, skip onboarding entirely
+        if (isAdmin) {
+          console.log('Admin user detected, skipping onboarding check');
+          setHasCompletedOnboarding(true);
+          return;
+        }
         
         // First check localStorage for quick response
         const localCompleted = localStorage.getItem(`onboarding_completed_${user.id}`);
@@ -100,11 +109,14 @@ const ProtectedRoutes = () => {
       }
     };
 
-    checkOnboardingStatus();
-  }, [user]);
+    // Only check onboarding status after admin status is determined
+    if (!adminLoading) {
+      checkOnboardingStatus();
+    }
+  }, [user, isAdmin, adminLoading]);
 
-  // Show loading while checking onboarding status for authenticated users
-  if (user && hasCompletedOnboarding === null) {
+  // Show loading while checking admin status or onboarding status for authenticated users
+  if (user && (adminLoading || hasCompletedOnboarding === null)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -112,13 +124,13 @@ const ProtectedRoutes = () => {
     );
   }
 
-  // If user is authenticated but hasn't completed onboarding, show onboarding
-  if (user && hasCompletedOnboarding === false) {
+  // If user is authenticated but hasn't completed onboarding and is not admin, show onboarding
+  if (user && hasCompletedOnboarding === false && !isAdmin) {
     return <Onboarding />;
   }
 
-  // If user is authenticated and has completed onboarding, show main app
-  if (user && hasCompletedOnboarding === true) {
+  // If user is authenticated and (has completed onboarding OR is admin), show main app
+  if (user && (hasCompletedOnboarding === true || isAdmin)) {
     return <ProtectedLayout />;
   }
 
