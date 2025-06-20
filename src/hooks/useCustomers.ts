@@ -56,6 +56,21 @@ export const useCustomers = () => {
     }
   };
 
+  const deleteCustomers = async (customerIds: string[]) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .delete()
+        .in('id', customerIds);
+
+      if (error) throw error;
+      
+      setCustomers(prev => prev.filter(customer => !customerIds.includes(customer.id)));
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to delete customers');
+    }
+  };
+
   useEffect(() => {
     fetchCustomers();
   }, []);
@@ -66,5 +81,6 @@ export const useCustomers = () => {
     error,
     refetch: fetchCustomers,
     addCustomer,
+    deleteCustomers,
   };
 };

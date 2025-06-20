@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Building2 } from "lucide-react";
 
 interface Customer {
@@ -15,20 +16,38 @@ interface Customer {
 interface CustomersListProps {
   customers: Customer[];
   view: "grid" | "list";
+  selectedCustomers: string[];
+  onSelectionChange: (customerId: string, selected: boolean) => void;
+  onSelectAll: (selected: boolean) => void;
 }
 
-const CustomersList = ({ customers, view }: CustomersListProps) => {
+const CustomersList = ({ 
+  customers, 
+  view, 
+  selectedCustomers, 
+  onSelectionChange, 
+  onSelectAll 
+}: CustomersListProps) => {
+  const allSelected = customers.length > 0 && selectedCustomers.length === customers.length;
+  const someSelected = selectedCustomers.length > 0;
+
   if (view === "grid") {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {customers.map((customer) => (
-          <Card key={customer.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card key={customer.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <Building2 className="mr-2 h-5 w-5" />
-                  {customer.name}
-                </CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={selectedCustomers.includes(customer.id)}
+                    onCheckedChange={(checked) => onSelectionChange(customer.id, !!checked)}
+                  />
+                  <CardTitle className="text-lg flex items-center">
+                    <Building2 className="mr-2 h-5 w-5" />
+                    {customer.name}
+                  </CardTitle>
+                </div>
                 <Badge variant={customer.status === "Active" ? "default" : "secondary"}>
                   {customer.status}
                 </Badge>
@@ -54,6 +73,13 @@ const CustomersList = ({ customers, view }: CustomersListProps) => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-12">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected && !allSelected}
+                onCheckedChange={onSelectAll}
+              />
+            </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Industry</TableHead>
             <TableHead>Revenue</TableHead>
@@ -62,7 +88,13 @@ const CustomersList = ({ customers, view }: CustomersListProps) => {
         </TableHeader>
         <TableBody>
           {customers.map((customer) => (
-            <TableRow key={customer.id} className="cursor-pointer hover:bg-muted/50">
+            <TableRow key={customer.id} className="hover:bg-muted/50">
+              <TableCell>
+                <Checkbox
+                  checked={selectedCustomers.includes(customer.id)}
+                  onCheckedChange={(checked) => onSelectionChange(customer.id, !!checked)}
+                />
+              </TableCell>
               <TableCell className="font-medium">
                 <div className="flex items-center">
                   <Building2 className="mr-2 h-4 w-4" />

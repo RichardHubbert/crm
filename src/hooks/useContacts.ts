@@ -67,6 +67,21 @@ export const useContacts = () => {
     }
   };
 
+  const deleteContacts = async (contactIds: string[]) => {
+    try {
+      const { error } = await supabase
+        .from('contacts')
+        .delete()
+        .in('id', contactIds);
+
+      if (error) throw error;
+      
+      setContacts(prev => prev.filter(contact => !contactIds.includes(contact.id)));
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to delete contacts');
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
   }, []);
@@ -77,5 +92,6 @@ export const useContacts = () => {
     error,
     refetch: fetchContacts,
     addContact,
+    deleteContacts,
   };
 };

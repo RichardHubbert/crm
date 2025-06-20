@@ -2,26 +2,45 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { User, Mail, Phone } from "lucide-react";
 import { Contact } from "@/hooks/useContacts";
 
 interface ContactsListProps {
   contacts: Contact[];
   view: "grid" | "list";
+  selectedContacts: string[];
+  onSelectionChange: (contactId: string, selected: boolean) => void;
+  onSelectAll: (selected: boolean) => void;
 }
 
-const ContactsList = ({ contacts, view }: ContactsListProps) => {
+const ContactsList = ({ 
+  contacts, 
+  view, 
+  selectedContacts, 
+  onSelectionChange, 
+  onSelectAll 
+}: ContactsListProps) => {
+  const allSelected = contacts.length > 0 && selectedContacts.length === contacts.length;
+  const someSelected = selectedContacts.length > 0;
+
   if (view === "grid") {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {contacts.map((contact) => (
-          <Card key={contact.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card key={contact.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <User className="mr-2 h-5 w-5" />
-                  {contact.name}
-                </CardTitle>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={selectedContacts.includes(contact.id)}
+                    onCheckedChange={(checked) => onSelectionChange(contact.id, !!checked)}
+                  />
+                  <CardTitle className="text-lg flex items-center">
+                    <User className="mr-2 h-5 w-5" />
+                    {contact.name}
+                  </CardTitle>
+                </div>
                 <Badge variant={contact.status === "Active" ? "default" : "secondary"}>
                   {contact.status}
                 </Badge>
@@ -58,6 +77,13 @@ const ContactsList = ({ contacts, view }: ContactsListProps) => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-12">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected && !allSelected}
+                onCheckedChange={onSelectAll}
+              />
+            </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Customer</TableHead>
@@ -68,7 +94,13 @@ const ContactsList = ({ contacts, view }: ContactsListProps) => {
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
-            <TableRow key={contact.id} className="cursor-pointer hover:bg-muted/50">
+            <TableRow key={contact.id} className="hover:bg-muted/50">
+              <TableCell>
+                <Checkbox
+                  checked={selectedContacts.includes(contact.id)}
+                  onCheckedChange={(checked) => onSelectionChange(contact.id, !!checked)}
+                />
+              </TableCell>
               <TableCell className="font-medium">
                 <div className="flex items-center">
                   <User className="mr-2 h-4 w-4" />

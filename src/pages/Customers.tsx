@@ -4,17 +4,22 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, Building2, Loader2, Upload } from "lucide-react";
+import { Plus, Search, Building2, Loader2, Upload, Trash2 } from "lucide-react";
 import { useCustomers } from "@/hooks/useCustomers";
 import CSVImport from "@/components/CSVImport";
 import ViewToggle from "@/components/ViewToggle";
 import CustomersList from "@/components/CustomersList";
+import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
+import { toast } from "sonner";
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [view, setView] = useState<"grid" | "list">("grid");
-  const { customers, loading, error, refetch } = useCustomers();
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { customers, loading, error, refetch, deleteCustomers } = useCustomers();
 
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -23,6 +28,33 @@ const Customers = () => {
   const handleImportComplete = () => {
     setShowImportDialog(false);
     refetch();
+  };
+
+  const handleSelectionChange = (customerId: string, selected: boolean) => {
+    setSelectedCustomers(prev => 
+      selected 
+        ? [...prev, customerId]
+        : prev.filter(id => id !== customerId)
+    );
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    setSelectedCustomers(selected ? filteredCustomers.map(c => c.id) : []);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteCustomers(selectedCustomers);
+      toast.success(`Successfully deleted ${selectedCustomers.length} customer(s)`);
+      setSelectedCustomers([]);
+      setShowDeleteDialog(false);
+    } catch (error) {
+      toast.error('Failed to delete customers');
+      console.error('Delete error:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) {
@@ -65,6 +97,15 @@ const Customers = () => {
           <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
         </div>
         <div className="flex space-x-2">
+          {selectedCustomers.length > 0 && (
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete ({selectedCustomers.length})
+            </Button>
+          )}
           <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -107,8 +148,23 @@ const Customers = () => {
           </div>
         </div>
       ) : (
-        <CustomersList customers={filteredCustomers} view={view} />
+        <CustomersList 
+          customers={filteredCustomers} 
+          view={view} 
+          selectedCustomers={selectedCustomers}
+          onSelectionChange={handleSelectionChange}
+          onSelectAll={handleSelectAll}
+        />
       )}
+
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Customers"
+        description={`Are you sure you want to delete ${selectedCustomers.length} customer(s)? This action cannot be undone.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
