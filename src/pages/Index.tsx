@@ -1,16 +1,28 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 import { IndustrySelector } from "@/components/IndustrySelector";
 import { useAuthContext } from "@/components/AuthProvider";
+import { useState } from "react";
+import AuthWrapper from "@/components/AuthWrapper";
 
 const Index = () => {
   const { user } = useAuthContext();
+  const [showAuth, setShowAuth] = useState(false);
 
   // If user is already authenticated, they shouldn't see this page
   // The routing will handle redirecting them appropriately
   
+  const handleGetStarted = () => {
+    setShowAuth(true);
+  };
+
+  // Show authentication modal when user clicks Get Started
+  if (showAuth) {
+    return <AuthWrapper>{null}</AuthWrapper>;
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -27,7 +39,10 @@ const Index = () => {
             <Globe className="w-4 h-4 mr-2" />
             Contact sales
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+          <Button 
+            onClick={handleGetStarted}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+          >
             Get Started →
           </Button>
         </div>
@@ -55,7 +70,11 @@ const Index = () => {
 
         {/* CTA Button - This now leads to authentication */}
         <div className="mt-12">
-          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg">
+          <Button 
+            size="lg" 
+            onClick={handleGetStarted}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
+          >
             Get Started →
           </Button>
         </div>
