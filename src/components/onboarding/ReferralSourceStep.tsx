@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { referralSourceOptions } from "@/data/onboardingOptions";
 
@@ -12,45 +11,43 @@ interface ReferralSourceStepProps {
   isLoading: boolean;
 }
 
-export const ReferralSourceStep = ({ 
-  selectedSources, 
-  onSelect, 
-  onComplete, 
-  onBack, 
-  isLoading 
-}: ReferralSourceStepProps) => {
+export const ReferralSourceStep = ({ selectedSources, onSelect, onComplete, onBack, isLoading }: ReferralSourceStepProps) => {
   const handleSourceToggle = (sourceId: string) => {
-    const updatedSources = selectedSources.includes(sourceId)
-      ? selectedSources.filter(id => id !== sourceId)
-      : [...selectedSources, sourceId];
-    onSelect(updatedSources);
+    if (selectedSources.includes(sourceId)) {
+      onSelect(selectedSources.filter(id => id !== sourceId));
+    } else {
+      onSelect([...selectedSources, sourceId]);
+    }
   };
 
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
         <h1 className="text-2xl font-medium text-gray-900">
-          One last question, how did you hear about us?
+          How did you hear about us?
         </h1>
+        <p className="text-gray-600">
+          Select all that apply (optional)
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
         {referralSourceOptions.map((option) => (
-          <div key={option.id} className="flex items-center space-x-3">
-            <Checkbox
-              id={option.id}
-              checked={selectedSources.includes(option.id)}
-              onCheckedChange={() => handleSourceToggle(option.id)}
-              disabled={isLoading}
-              className="data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500"
-            />
-            <label
-              htmlFor={option.id}
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-            >
-              {option.label}
-            </label>
-          </div>
+          <button
+            key={option.id}
+            onClick={() => handleSourceToggle(option.id)}
+            disabled={isLoading}
+            className={`
+              px-4 py-3 rounded-lg border text-left font-medium transition-all
+              ${selectedSources.includes(option.id)
+                ? 'border-teal-500 bg-teal-50 text-teal-700'
+                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+              }
+              ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
+          >
+            {option.label}
+          </button>
         ))}
       </div>
 
@@ -68,16 +65,17 @@ export const ReferralSourceStep = ({
         <Button
           onClick={onComplete}
           disabled={isLoading}
-          className="bg-blue-600 text-white hover:bg-blue-700 px-6"
+          className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
+          variant="secondary"
         >
           {isLoading ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
               Setting up...
             </>
           ) : (
             <>
-              Continue
+              Complete
               <ChevronRight className="ml-2 h-4 w-4" />
             </>
           )}

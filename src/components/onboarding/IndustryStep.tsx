@@ -60,11 +60,11 @@ export const IndustryStep = ({ selectedIndustry, onSelect, onComplete, onBack, i
           {isLoading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
-              Setting up...
+              Loading...
             </>
           ) : (
             <>
-              Complete Setup
+              Continue
               <ChevronRight className="ml-2 h-4 w-4" />
             </>
           )}
