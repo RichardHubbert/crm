@@ -141,7 +141,7 @@ const AddContactDialog = ({ open, onOpenChange }: AddContactDialogProps) => {
                 <SelectValue placeholder="Select a customer (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No customer</SelectItem>
+                <SelectItem value="none">No customer</SelectItem>
                 {customers.map((customer) => (
                   <SelectItem key={customer.id} value={customer.id}>
                     {customer.name}
