@@ -37,7 +37,7 @@ const Onboarding = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
               <div className="w-5 h-5 bg-white rounded-sm"></div>
             </div>
-            <span className="text-xl font-semibold text-gray-900 ml-3">monday CRM</span>
+            <span className="text-xl font-semibold text-gray-900 ml-3">ai design CRM</span>
           </div>
         </div>
 
