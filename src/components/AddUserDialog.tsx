@@ -9,25 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import AddUserForm from "./AddUserForm";
+import { createUser } from "@/services/userService";
+import { UserFormData } from "@/types/userForm";
 
 interface AddUserDialogProps {
   open: boolean;
@@ -35,21 +21,10 @@ interface AddUserDialogProps {
   onUserAdded: () => void;
 }
 
-type UserRole = "admin" | "business" | "user";
-
-interface FormData {
-  email: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  business_name: string;
-  role: UserRole;
-}
-
 const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<FormData>({
+  const form = useForm<UserFormData>({
     defaultValues: {
       email: "",
       password: "",
@@ -60,40 +35,10 @@ const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) 
     },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: UserFormData) => {
     setIsLoading(true);
     try {
-      // Get the current session token
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available');
-      }
-
-      // Call the Edge Function to create the user using the hardcoded URL
-      const response = await fetch(`https://nnxdtpnrwgcknhpyhowr.supabase.co/functions/v1/admin-create-user`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-          first_name: data.first_name || null,
-          last_name: data.last_name || null,
-          business_name: data.business_name || null,
-          role: data.role,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to create user');
-      }
-
-      console.log('User creation result:', result);
+      await createUser(data);
       
       toast.success("User created successfully!");
       onUserAdded();
@@ -117,126 +62,21 @@ const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="Enter email address" 
-                      {...field} 
-                      required 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Temporary Password *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="Enter temporary password" 
-                      {...field}
-                      required 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter first name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter last name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="business_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Business Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter business name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create User"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <AddUserForm form={form} onSubmit={onSubmit} isLoading={isLoading}>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </AddUserForm>
       </DialogContent>
     </Dialog>
   );
