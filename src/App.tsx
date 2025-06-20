@@ -19,6 +19,7 @@ import { AppSidebar } from "./components/AppSidebar";
 import { SidebarInset } from "./components/ui/sidebar";
 import { useAuthContext } from "./components/AuthProvider";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
@@ -27,13 +28,50 @@ const AppRoutes = () => {
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (user) {
-      // Check if user has completed onboarding
-      const completed = localStorage.getItem(`onboarding_completed_${user.id}`);
-      setHasCompletedOnboarding(completed === 'true');
-    } else {
-      setHasCompletedOnboarding(null);
-    }
+    const checkOnboardingStatus = async () => {
+      if (user) {
+        console.log('Checking onboarding status for user:', user.id);
+        
+        // First check localStorage for quick response
+        const localCompleted = localStorage.getItem(`onboarding_completed_${user.id}`);
+        
+        // Then check database for authoritative answer
+        try {
+          const { data, error } = await supabase
+            .from('onboarding_data')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error checking onboarding status:', error);
+            // Fall back to localStorage
+            setHasCompletedOnboarding(localCompleted === 'true');
+            return;
+          }
+
+          const dbCompleted = !!data;
+          console.log('Database onboarding check:', dbCompleted);
+          
+          // Sync localStorage with database
+          if (dbCompleted && localCompleted !== 'true') {
+            localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
+          } else if (!dbCompleted && localCompleted === 'true') {
+            localStorage.removeItem(`onboarding_completed_${user.id}`);
+          }
+          
+          setHasCompletedOnboarding(dbCompleted);
+        } catch (error) {
+          console.error('Unexpected error checking onboarding:', error);
+          // Fall back to localStorage
+          setHasCompletedOnboarding(localCompleted === 'true');
+        }
+      } else {
+        setHasCompletedOnboarding(null);
+      }
+    };
+
+    checkOnboardingStatus();
   }, [user]);
 
   // Show loading while checking onboarding status for authenticated users

@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 import { useAuthContext } from "@/components/AuthProvider";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 const purposeOptions = [
   { id: "work", label: "Work" },
@@ -16,15 +16,19 @@ const purposeOptions = [
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null);
-  const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { completeOnboarding, isLoading } = useOnboarding();
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (currentStep === 1 && selectedPurpose && user) {
-      // Mark onboarding as completed
-      localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
-      // Navigate to dashboard - the app will automatically show the main interface
-      window.location.reload(); // Force reload to update onboarding state
+      console.log('Completing onboarding with purpose:', selectedPurpose);
+      
+      const success = await completeOnboarding(selectedPurpose);
+      
+      if (success) {
+        // Force reload to update onboarding state
+        window.location.reload();
+      }
     }
   };
 
@@ -56,12 +60,14 @@ const Onboarding = () => {
                   <button
                     key={option.id}
                     onClick={() => setSelectedPurpose(option.id)}
+                    disabled={isLoading}
                     className={`
                       p-4 rounded-lg border-2 text-left font-medium transition-all
                       ${selectedPurpose === option.id
                         ? 'border-teal-500 bg-teal-50 text-teal-700'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                       }
+                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
                   >
                     {option.label}
@@ -72,12 +78,21 @@ const Onboarding = () => {
               <div className="flex justify-end pt-4">
                 <Button
                   onClick={handleContinue}
-                  disabled={!selectedPurpose}
+                  disabled={!selectedPurpose || isLoading}
                   className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
                   variant="secondary"
                 >
-                  Continue
-                  <ChevronRight className="ml-2 h-4 w-4" />
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                      Setting up...
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
