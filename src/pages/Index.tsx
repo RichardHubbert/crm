@@ -3,8 +3,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Globe } from "lucide-react";
 import { IndustrySelector } from "@/components/IndustrySelector";
+import { useAuthContext } from "@/components/AuthProvider";
 
 const Index = () => {
+  const { user } = useAuthContext();
+
+  // If user is already authenticated, they shouldn't see this page
+  // The routing will handle redirecting them appropriately
+  
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -47,10 +53,10 @@ const Index = () => {
         {/* Industry Selection */}
         <IndustrySelector />
 
-        {/* CTA Button */}
+        {/* CTA Button - This now leads to authentication */}
         <div className="mt-12">
-          <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg">
-            <Link to="/dashboard">Get Started →</Link>
+          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg">
+            Get Started →
           </Button>
         </div>
       </main>

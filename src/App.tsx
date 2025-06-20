@@ -36,6 +36,15 @@ const AppRoutes = () => {
     }
   }, [user]);
 
+  // Show loading while checking onboarding status for authenticated users
+  if (user && hasCompletedOnboarding === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
   // If user is authenticated but hasn't completed onboarding, show onboarding
   if (user && hasCompletedOnboarding === false) {
     return <Onboarding />;
@@ -63,7 +72,7 @@ const AppRoutes = () => {
     );
   }
 
-  // For non-authenticated users, show landing page
+  // For non-authenticated users, show landing page and auth flow
   return (
     <Routes>
       <Route path="/" element={<Index />} />
