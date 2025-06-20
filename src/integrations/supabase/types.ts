@@ -227,6 +227,8 @@ export type Database = {
           id: string
           industry: string | null
           purpose: string
+          referral_sources: string[] | null
+          role: string | null
           team_size: string | null
           updated_at: string
           user_id: string
@@ -238,6 +240,8 @@ export type Database = {
           id?: string
           industry?: string | null
           purpose: string
+          referral_sources?: string[] | null
+          role?: string | null
           team_size?: string | null
           updated_at?: string
           user_id: string
@@ -249,6 +253,8 @@ export type Database = {
           id?: string
           industry?: string | null
           purpose?: string
+          referral_sources?: string[] | null
+          role?: string | null
           team_size?: string | null
           updated_at?: string
           user_id?: string
