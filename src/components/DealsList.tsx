@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DollarSign } from "lucide-react";
+import { Handshake } from "lucide-react";
 
 interface Deal {
   id: string;
@@ -44,7 +44,7 @@ const DealsList = ({ deals, view }: DealsListProps) => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center">
-                    <DollarSign className="mr-2 h-5 w-5" />
+                    <Handshake className="mr-2 h-5 w-5" />
                     {deal.title}
                   </CardTitle>
                   <Badge className={getStageColor(deal.stage)}>
@@ -96,7 +96,7 @@ const DealsList = ({ deals, view }: DealsListProps) => {
             <TableRow key={deal.id} className="cursor-pointer hover:bg-muted/50">
               <TableCell className="font-medium">
                 <Link to={`/deals/${deal.id}`} className="flex items-center hover:underline">
-                  <DollarSign className="mr-2 h-4 w-4" />
+                  <Handshake className="mr-2 h-4 w-4" />
                   {deal.title}
                 </Link>
               </TableCell>

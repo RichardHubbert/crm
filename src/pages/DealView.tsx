@@ -4,7 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Calendar, DollarSign, Building2, Percent } from "lucide-react";
+import { ArrowLeft, Edit, Calendar, Handshake, Building2, Percent } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserInfo } from "@/components/UserInfo";
 import { Deal } from "@/hooks/useDeals";
@@ -142,7 +142,7 @@ const DealView = () => {
             <div>
               <div className="text-sm font-medium">Value</div>
               <div className="text-gray-600">
-                <DollarSign className="mr-2 inline-block h-4 w-4" />
+                <Handshake className="mr-2 inline-block h-4 w-4" />
                 {deal.value.toLocaleString()}
               </div>
             </div>
