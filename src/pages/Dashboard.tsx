@@ -11,6 +11,8 @@ import { UserInfo } from "@/components/UserInfo";
 const Dashboard = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
 
+  console.log('Dashboard component rendering');
+
   const handleImportComplete = () => {
     setShowImportDialog(false);
     // Could add a refetch of dashboard data here if needed
@@ -24,6 +26,7 @@ const Dashboard = () => {
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         </div>
         <div className="flex items-center space-x-4">
+          {console.log('About to render UserInfo component')}
           <UserInfo />
           <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
             <DialogTrigger asChild>

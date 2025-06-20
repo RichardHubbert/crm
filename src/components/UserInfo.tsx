@@ -5,16 +5,34 @@ import { Button } from "@/components/ui/button";
 import { LogOut, User } from "lucide-react";
 
 export const UserInfo = () => {
-  const { user, signOut } = useAuthContext();
+  const { user, signOut, loading } = useAuthContext();
+
+  console.log('UserInfo component rendered');
+  console.log('Loading state:', loading);
+  console.log('User state:', user);
 
   const handleSignOut = async () => {
     console.log('Signing out user...');
     await signOut();
   };
 
+  // Show loading state
+  if (loading) {
+    console.log('UserInfo showing loading state');
+    return (
+      <div className="flex items-center space-x-3 bg-yellow-100 px-3 py-2 rounded-lg border border-yellow-300">
+        <div className="text-sm text-yellow-800">Loading user...</div>
+      </div>
+    );
+  }
+
   if (!user) {
     console.log('No user found in UserInfo component');
-    return null;
+    return (
+      <div className="flex items-center space-x-3 bg-red-100 px-3 py-2 rounded-lg border border-red-300">
+        <div className="text-sm text-red-800">Not authenticated</div>
+      </div>
+    );
   }
 
   console.log('UserInfo rendering for user:', user.email);
@@ -24,7 +42,7 @@ export const UserInfo = () => {
     : "U";
 
   return (
-    <div className="flex items-center space-x-3 bg-gray-50 px-3 py-2 rounded-lg border">
+    <div className="flex items-center space-x-3 bg-green-100 px-3 py-2 rounded-lg border border-green-300">
       <div className="flex items-center space-x-2">
         <Avatar className="h-8 w-8">
           <AvatarImage src="" />
