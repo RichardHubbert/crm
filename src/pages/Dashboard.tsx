@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +25,6 @@ const Dashboard = () => {
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         </div>
         <div className="flex items-center space-x-4">
-          {console.log('About to render UserInfo component')}
           <UserInfo />
           <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
             <DialogTrigger asChild>
