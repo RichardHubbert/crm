@@ -76,7 +76,6 @@ const CustomersList = ({
             <TableHead className="w-12">
               <Checkbox
                 checked={allSelected}
-                indeterminate={someSelected && !allSelected}
                 onCheckedChange={onSelectAll}
               />
             </TableHead>

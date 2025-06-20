@@ -18,6 +18,7 @@ const Contacts = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -56,6 +57,22 @@ const Contacts = () => {
     } catch (error) {
       toast.error('Failed to delete contacts');
       console.error('Delete error:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAllConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      const allContactIds = filteredContacts.map(c => c.id);
+      await deleteContacts(allContactIds);
+      toast.success(`Successfully deleted all ${allContactIds.length} contact(s)`);
+      setSelectedContacts([]);
+      setShowDeleteAllDialog(false);
+    } catch (error) {
+      toast.error('Failed to delete all contacts');
+      console.error('Delete all error:', error);
     } finally {
       setIsDeleting(false);
     }
@@ -101,6 +118,15 @@ const Contacts = () => {
           <h2 className="text-3xl font-bold tracking-tight">Contacts</h2>
         </div>
         <div className="flex space-x-2">
+          {filteredContacts.length > 0 && (
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteAllDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete All ({filteredContacts.length})
+            </Button>
+          )}
           {selectedContacts.length > 0 && (
             <Button
               variant="destructive"
@@ -159,9 +185,7 @@ const Contacts = () => {
           contacts={filteredContacts} 
           view={view} 
           selectedContacts={selectedContacts}
-          onSelection
-
-={handleSelectionChange}
+          onSelectionChange={handleSelectionChange}
           onSelectAll={handleSelectAll}
         />
       )}
@@ -177,6 +201,15 @@ const Contacts = () => {
         onConfirm={handleDeleteConfirm}
         title="Delete Contacts"
         description={`Are you sure you want to delete ${selectedContacts.length} contact(s)? This action cannot be undone.`}
+        isLoading={isDeleting}
+      />
+
+      <DeleteConfirmationDialog
+        open={showDeleteAllDialog}
+        onOpenChange={setShowDeleteAllDialog}
+        onConfirm={handleDeleteAllConfirm}
+        title="Delete All Contacts"
+        description={`Are you sure you want to delete ALL ${filteredContacts.length} contact(s)? This action cannot be undone.`}
         isLoading={isDeleting}
       />
     </div>

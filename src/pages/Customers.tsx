@@ -16,6 +16,7 @@ const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -52,6 +53,22 @@ const Customers = () => {
     } catch (error) {
       toast.error('Failed to delete customers');
       console.error('Delete error:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAllConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      const allCustomerIds = filteredCustomers.map(c => c.id);
+      await deleteCustomers(allCustomerIds);
+      toast.success(`Successfully deleted all ${allCustomerIds.length} customer(s)`);
+      setSelectedCustomers([]);
+      setShowDeleteAllDialog(false);
+    } catch (error) {
+      toast.error('Failed to delete all customers');
+      console.error('Delete all error:', error);
     } finally {
       setIsDeleting(false);
     }
@@ -97,6 +114,15 @@ const Customers = () => {
           <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
         </div>
         <div className="flex space-x-2">
+          {filteredCustomers.length > 0 && (
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteAllDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete All ({filteredCustomers.length})
+            </Button>
+          )}
           {selectedCustomers.length > 0 && (
             <Button
               variant="destructive"
@@ -163,6 +189,15 @@ const Customers = () => {
         onConfirm={handleDeleteConfirm}
         title="Delete Customers"
         description={`Are you sure you want to delete ${selectedCustomers.length} customer(s)? This action cannot be undone.`}
+        isLoading={isDeleting}
+      />
+
+      <DeleteConfirmationDialog
+        open={showDeleteAllDialog}
+        onOpenChange={setShowDeleteAllDialog}
+        onConfirm={handleDeleteAllConfirm}
+        title="Delete All Customers"
+        description={`Are you sure you want to delete ALL ${filteredCustomers.length} customer(s)? This action cannot be undone.`}
         isLoading={isDeleting}
       />
     </div>
