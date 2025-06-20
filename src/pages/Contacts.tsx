@@ -9,10 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Search, User, Mail, Phone, Loader2, Upload } from "lucide-react";
 import { useContacts } from "@/hooks/useContacts";
 import CSVImport from "@/components/CSVImport";
+import AddContactDialog from "@/components/AddContactDialog";
 
 const Contacts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const { contacts, loading, error, refetch } = useContacts();
 
   const filteredContacts = contacts.filter(contact =>
@@ -80,7 +82,10 @@ const Contacts = () => {
               <CSVImport onImportComplete={handleImportComplete} />
             </DialogContent>
           </Dialog>
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => setShowAddDialog(true)}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add Contact
           </Button>
@@ -143,6 +148,11 @@ const Contacts = () => {
           ))}
         </div>
       )}
+
+      <AddContactDialog 
+        open={showAddDialog} 
+        onOpenChange={setShowAddDialog} 
+      />
     </div>
   );
 };
