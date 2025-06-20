@@ -71,6 +71,133 @@ export type Database = {
         }
         Relationships: []
       }
+      contacts: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          status: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          industry: string | null
+          name: string
+          revenue: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          name: string
+          revenue?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          name?: string
+          revenue?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deals: {
+        Row: {
+          close_date: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          probability: number | null
+          stage: string
+          title: string
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          close_date?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          probability?: number | null
+          stage?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          close_date?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          probability?: number | null
+          stage?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content: string | null

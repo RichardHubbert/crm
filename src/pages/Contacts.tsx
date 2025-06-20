@@ -5,55 +5,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, User, Mail, Phone } from "lucide-react";
-
-const mockContacts = [
-  {
-    id: 1,
-    name: "John Smith",
-    title: "CEO",
-    customer: "Acme Corporation",
-    email: "john.smith@acme.com",
-    phone: "+1 (555) 123-4567",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    title: "CTO",
-    customer: "Acme Corporation",
-    email: "sarah.johnson@acme.com",
-    phone: "+1 (555) 123-4568",
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Mike Wilson",
-    title: "VP Sales",
-    customer: "Global Solutions Inc",
-    email: "mike.wilson@globalsolutions.com",
-    phone: "+1 (555) 987-6543",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "Lisa Chen",
-    title: "Product Manager",
-    customer: "TechStart Ltd",
-    email: "lisa.chen@techstart.com",
-    phone: "+1 (555) 456-7890",
-    status: "Prospect",
-  },
-];
+import { Plus, Search, User, Mail, Phone, Loader2 } from "lucide-react";
+import { useContacts } from "@/hooks/useContacts";
 
 const Contacts = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { contacts, loading, error } = useContacts();
 
-  const filteredContacts = mockContacts.filter(contact =>
+  const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.title.toLowerCase().includes(searchTerm.toLowerCase())
+    (contact.customer?.name && contact.customer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (contact.title && contact.title.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  if (loading) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <SidebarTrigger />
+            <h2 className="text-3xl font-bold tracking-tight">Contacts</h2>
+          </div>
+        </div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <SidebarTrigger />
+            <h2 className="text-3xl font-bold tracking-tight">Contacts</h2>
+          </div>
+        </div>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="text-red-500">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -78,36 +73,52 @@ const Contacts = () => {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredContacts.map((contact) => (
-          <Card key={contact.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <User className="mr-2 h-5 w-5" />
-                  {contact.name}
-                </CardTitle>
-                <Badge variant={contact.status === "Active" ? "default" : "secondary"}>
-                  {contact.status}
-                </Badge>
-              </div>
-              <CardDescription>{contact.title} at {contact.customer}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{contact.email}</span>
+      {filteredContacts.length === 0 ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No contacts found. Add your first contact to get started!</p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredContacts.map((contact) => (
+            <Card key={contact.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center">
+                    <User className="mr-2 h-5 w-5" />
+                    {contact.name}
+                  </CardTitle>
+                  <Badge variant={contact.status === "Active" ? "default" : "secondary"}>
+                    {contact.status}
+                  </Badge>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{contact.phone}</span>
+                <CardDescription>
+                  {contact.title ? `${contact.title}` : "No title"} 
+                  {contact.customer?.name ? ` at ${contact.customer.name}` : ""}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {contact.email && (
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{contact.email}</span>
+                    </div>
+                  )}
+                  {contact.phone && (
+                    <div className="flex items-center space-x-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">{contact.phone}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
