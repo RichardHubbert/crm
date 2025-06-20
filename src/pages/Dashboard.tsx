@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Building2, Users, Handshake, DollarSign, Upload } from "lucide-react";
 import CSVImport from "@/components/CSVImport";
+import { UserInfo } from "@/components/UserInfo";
 
 const Dashboard = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -21,20 +23,23 @@ const Dashboard = () => {
           <SidebarTrigger />
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         </div>
-        <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <Upload className="mr-2 h-4 w-4" />
-              Import CSV
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Import Data</DialogTitle>
-            </DialogHeader>
-            <CSVImport onImportComplete={handleImportComplete} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center space-x-4">
+          <UserInfo />
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="mr-2 h-4 w-4" />
+                Import CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Import Data</DialogTitle>
+              </DialogHeader>
+              <CSVImport onImportComplete={handleImportComplete} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
