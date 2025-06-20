@@ -1,13 +1,15 @@
+
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, Handshake, Loader2, Upload } from "lucide-react";
+import { Search, Handshake, Loader2, Upload } from "lucide-react";
 import { useDeals } from "@/hooks/useDeals";
 import CSVImport from "@/components/CSVImport";
 import ViewToggle from "@/components/ViewToggle";
 import DealsList from "@/components/DealsList";
+import AddDealDialog from "@/components/AddDealDialog";
 import { UserInfo } from "@/components/UserInfo";
 
 const Deals = () => {
@@ -23,6 +25,10 @@ const Deals = () => {
   });
 
   const handleImportComplete = () => {
+    refetch();
+  };
+
+  const handleDealAdded = () => {
     refetch();
   };
 
@@ -84,10 +90,7 @@ const Deals = () => {
                 <CSVImport onImportComplete={handleImportComplete} />
               </DialogContent>
             </Dialog>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Deal
-            </Button>
+            <AddDealDialog onDealAdded={handleDealAdded} />
           </div>
         </div>
       </div>
