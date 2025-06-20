@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { AuthProvider } from "./components/AuthProvider";
+import { SignOutHelper } from "./components/SignOutHelper";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -143,6 +144,9 @@ const AppRoutes = () => {
     <Routes>
       {/* Public route - landing page */}
       <Route path="/" element={<Index />} />
+      
+      {/* Sign out route */}
+      <Route path="/signout" element={<SignOutHelper />} />
       
       {/* Protected routes - using wildcard to allow nested routing */}
       <Route path="/*" element={<ProtectedRoutes />} />
