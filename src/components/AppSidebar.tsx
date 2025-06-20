@@ -1,5 +1,5 @@
 
-import { Building2, Users, Handshake, Phone, BarChart3 } from "lucide-react";
+import { Building2, Users, Handshake, Phone, BarChart3, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
 } from "@/components/ui/sidebar";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const menuItems = [
   {
@@ -36,8 +37,17 @@ const menuItems = [
   },
 ];
 
+const adminMenuItems = [
+  {
+    title: "User Management",
+    url: "/admin/users",
+    icon: Shield,
+  },
+];
+
 export function AppSidebar() {
   const location = useLocation();
+  const { isAdmin } = useIsAdmin();
 
   return (
     <Sidebar>
@@ -70,6 +80,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={location.pathname === item.url}
+                    >
+                      <Link to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );
