@@ -1,21 +1,21 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Search, DollarSign, Loader2, Upload } from "lucide-react";
 import { useDeals } from "@/hooks/useDeals";
 import CSVImport from "@/components/CSVImport";
+import ViewToggle from "@/components/ViewToggle";
+import DealsList from "@/components/DealsList";
 
 const Deals = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const { deals, loading, error } = useDeals();
 
   const filteredDeals = deals.filter(deal => {
@@ -24,18 +24,6 @@ const Deals = () => {
     const matchesStage = stageFilter === "all" || deal.stage.toLowerCase() === stageFilter;
     return matchesSearch && matchesStage;
   });
-
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case "Prospecting": return "bg-gray-100 text-gray-800";
-      case "Qualification": return "bg-blue-100 text-blue-800";
-      case "Proposal": return "bg-yellow-100 text-yellow-800";
-      case "Negotiation": return "bg-orange-100 text-orange-800";
-      case "Closed Won": return "bg-green-100 text-green-800";
-      case "Closed Lost": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
 
   if (loading) {
     return (
@@ -98,28 +86,31 @@ const Deals = () => {
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search deals..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search deals..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+          <Select value={stageFilter} onValueChange={setStageFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by stage" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stages</SelectItem>
+              <SelectItem value="prospecting">Prospecting</SelectItem>
+              <SelectItem value="qualification">Qualification</SelectItem>
+              <SelectItem value="proposal">Proposal</SelectItem>
+              <SelectItem value="negotiation">Negotiation</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={stageFilter} onValueChange={setStageFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by stage" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Stages</SelectItem>
-            <SelectItem value="prospecting">Prospecting</SelectItem>
-            <SelectItem value="qualification">Qualification</SelectItem>
-            <SelectItem value="proposal">Proposal</SelectItem>
-            <SelectItem value="negotiation">Negotiation</SelectItem>
-          </SelectContent>
-        </Select>
+        <ViewToggle view={view} onViewChange={setView} />
       </div>
 
       {filteredDeals.length === 0 ? (
@@ -130,44 +121,7 @@ const Deals = () => {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredDeals.map((deal) => (
-            <Link key={deal.id} to={`/deals/${deal.id}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center">
-                      <DollarSign className="mr-2 h-5 w-5" />
-                      {deal.title}
-                    </CardTitle>
-                    <Badge className={getStageColor(deal.stage)}>
-                      {deal.stage}
-                    </Badge>
-                  </div>
-                  <CardDescription>{deal.customer?.name || "No customer assigned"}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Value:</span>
-                      <span className="text-sm font-medium">${deal.value.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Probability:</span>
-                      <span className="text-sm font-medium">{deal.probability}%</span>
-                    </div>
-                    {deal.close_date && (
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Close Date:</span>
-                        <span className="text-sm font-medium">{new Date(deal.close_date).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <DealsList deals={filteredDeals} view={view} />
       )}
     </div>
   );

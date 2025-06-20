@@ -3,18 +3,19 @@ import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Search, User, Mail, Phone, Loader2, Upload } from "lucide-react";
+import { Plus, Search, User, Loader2, Upload } from "lucide-react";
 import { useContacts } from "@/hooks/useContacts";
 import CSVImport from "@/components/CSVImport";
 import AddContactDialog from "@/components/AddContactDialog";
+import ViewToggle from "@/components/ViewToggle";
+import ContactsList from "@/components/ContactsList";
 
 const Contacts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const { contacts, loading, error, refetch } = useContacts();
 
   const filteredContacts = contacts.filter(contact =>
@@ -25,7 +26,7 @@ const Contacts = () => {
 
   const handleImportComplete = () => {
     setShowImportDialog(false);
-    refetch(); // Refresh the contacts list
+    refetch();
   };
 
   if (loading) {
@@ -92,14 +93,17 @@ const Contacts = () => {
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search contacts..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search contacts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+        <ViewToggle view={view} onViewChange={setView} />
       </div>
 
       {filteredContacts.length === 0 ? (
@@ -110,43 +114,7 @@ const Contacts = () => {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredContacts.map((contact) => (
-            <Card key={contact.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center">
-                    <User className="mr-2 h-5 w-5" />
-                    {contact.name}
-                  </CardTitle>
-                  <Badge variant={contact.status === "Active" ? "default" : "secondary"}>
-                    {contact.status}
-                  </Badge>
-                </div>
-                <CardDescription>
-                  {contact.title ? `${contact.title}` : "No title"} 
-                  {contact.customer?.name ? ` at ${contact.customer.name}` : ""}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {contact.email && (
-                    <div className="flex items-center space-x-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{contact.email}</span>
-                    </div>
-                  )}
-                  {contact.phone && (
-                    <div className="flex items-center space-x-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{contact.phone}</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <ContactsList contacts={filteredContacts} view={view} />
       )}
 
       <AddContactDialog 

@@ -3,16 +3,17 @@ import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Search, Building2, Loader2, Upload } from "lucide-react";
 import { useCustomers } from "@/hooks/useCustomers";
 import CSVImport from "@/components/CSVImport";
+import ViewToggle from "@/components/ViewToggle";
+import CustomersList from "@/components/CustomersList";
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const { customers, loading, error, refetch } = useCustomers();
 
   const filteredCustomers = customers.filter(customer =>
@@ -21,7 +22,7 @@ const Customers = () => {
 
   const handleImportComplete = () => {
     setShowImportDialog(false);
-    refetch(); // Refresh the customers list
+    refetch();
   };
 
   if (loading) {
@@ -85,14 +86,17 @@ const Customers = () => {
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search customers..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search customers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+        <ViewToggle view={view} onViewChange={setView} />
       </div>
 
       {filteredCustomers.length === 0 ? (
@@ -103,32 +107,7 @@ const Customers = () => {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredCustomers.map((customer) => (
-            <Card key={customer.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center">
-                    <Building2 className="mr-2 h-5 w-5" />
-                    {customer.name}
-                  </CardTitle>
-                  <Badge variant={customer.status === "Active" ? "default" : "secondary"}>
-                    {customer.status}
-                  </Badge>
-                </div>
-                <CardDescription>{customer.industry || "No industry specified"}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Revenue:</span>
-                    <span className="text-sm font-medium">${customer.revenue.toLocaleString()}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <CustomersList customers={filteredCustomers} view={view} />
       )}
     </div>
   );
