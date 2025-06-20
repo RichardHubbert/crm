@@ -1,22 +1,24 @@
-
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Search, Building2, Loader2, Upload, Trash2 } from "lucide-react";
-import { useCustomers } from "@/hooks/useCustomers";
+import { useCustomers, Customer } from "@/hooks/useCustomers";
 import CSVImport from "@/components/CSVImport";
 import ViewToggle from "@/components/ViewToggle";
 import CustomersList from "@/components/CustomersList";
+import EditCustomerDialog from "@/components/EditCustomerDialog";
 import DeleteConfirmationDialog from "@/components/DeleteConfirmationDialog";
 import { toast } from "sonner";
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -41,6 +43,11 @@ const Customers = () => {
 
   const handleSelectAll = (selected: boolean) => {
     setSelectedCustomers(selected ? filteredCustomers.map(c => c.id) : []);
+  };
+
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setShowEditDialog(true);
   };
 
   const handleDeleteConfirm = async () => {
@@ -180,8 +187,15 @@ const Customers = () => {
           selectedCustomers={selectedCustomers}
           onSelectionChange={handleSelectionChange}
           onSelectAll={handleSelectAll}
+          onEditCustomer={handleEditCustomer}
         />
       )}
+
+      <EditCustomerDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        customer={editingCustomer}
+      />
 
       <DeleteConfirmationDialog
         open={showDeleteDialog}

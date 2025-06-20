@@ -37,7 +37,7 @@ const EditContactDialog = ({ open, onOpenChange, contact }: EditContactDialogPro
         title: contact.title || "",
         email: contact.email || "",
         phone: contact.phone || "",
-        customer_id: contact.customer_id || "",
+        customer_id: contact.customer_id || "none",
         status: contact.status || "Active"
       });
     }
@@ -57,7 +57,7 @@ const EditContactDialog = ({ open, onOpenChange, contact }: EditContactDialogPro
         title: formData.title || null,
         email: formData.email || null,
         phone: formData.phone || null,
-        customer_id: formData.customer_id || null,
+        customer_id: formData.customer_id === "none" ? null : formData.customer_id,
         status: formData.status,
       });
 
@@ -136,7 +136,7 @@ const EditContactDialog = ({ open, onOpenChange, contact }: EditContactDialogPro
                 <SelectValue placeholder="Select a customer (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No customer</SelectItem>
+                <SelectItem value="none">No customer</SelectItem>
                 {customers.map((customer) => (
                   <SelectItem key={customer.id} value={customer.id}>
                     {customer.name}

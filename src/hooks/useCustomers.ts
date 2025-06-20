@@ -56,6 +56,26 @@ export const useCustomers = () => {
     }
   };
 
+  const updateCustomer = async (customerId: string, customerData: Partial<Omit<Customer, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .update(customerData)
+        .eq('id', customerId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setCustomers(prev => prev.map(customer => 
+        customer.id === customerId ? data : customer
+      ));
+      return data;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to update customer');
+    }
+  };
+
   const deleteCustomers = async (customerIds: string[]) => {
     try {
       const { error } = await supabase
@@ -81,6 +101,7 @@ export const useCustomers = () => {
     error,
     refetch: fetchCustomers,
     addCustomer,
+    updateCustomer,
     deleteCustomers,
   };
 };
