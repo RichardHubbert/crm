@@ -5,11 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Building2, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Search, Building2, Loader2, Upload } from "lucide-react";
 import { useCustomers } from "@/hooks/useCustomers";
+import CSVImport from "@/components/CSVImport";
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const { customers, loading, error } = useCustomers();
 
   const filteredCustomers = customers.filter(customer =>
@@ -55,10 +58,26 @@ const Customers = () => {
           <SidebarTrigger />
           <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Customer
-        </Button>
+        <div className="flex space-x-2">
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="mr-2 h-4 w-4" />
+                Import CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Import Customer Data</DialogTitle>
+              </DialogHeader>
+              <CSVImport />
+            </DialogContent>
+          </Dialog>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Customer
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center space-x-2">

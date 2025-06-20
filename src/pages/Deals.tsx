@@ -7,12 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, DollarSign, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Search, DollarSign, Loader2, Upload } from "lucide-react";
 import { useDeals } from "@/hooks/useDeals";
+import CSVImport from "@/components/CSVImport";
 
 const Deals = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const { deals, loading, error } = useDeals();
 
   const filteredDeals = deals.filter(deal => {
@@ -73,10 +76,26 @@ const Deals = () => {
           <SidebarTrigger />
           <h2 className="text-3xl font-bold tracking-tight">Deals</h2>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Deal
-        </Button>
+        <div className="flex space-x-2">
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="mr-2 h-4 w-4" />
+                Import CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Import Deal Data</DialogTitle>
+              </DialogHeader>
+              <CSVImport />
+            </DialogContent>
+          </Dialog>
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Deal
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center space-x-4">
