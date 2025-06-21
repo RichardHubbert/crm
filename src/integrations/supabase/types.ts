@@ -639,6 +639,16 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      admin_get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          created_at: string
+          email_confirmed_at: string
+          last_sign_in_at: string
+        }[]
+      }
       admin_remove_user_role: {
         Args: {
           target_user_id: string

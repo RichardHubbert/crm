@@ -20,7 +20,20 @@ export const useAdminUsers = () => {
       try {
         console.log('Fetching all users for admin...');
 
-        // First, fetch all profiles
+        // Use the new admin function to get all users from auth.users
+        const { data: authUsers, error: authUsersError } = await supabase
+          .rpc('admin_get_all_users');
+
+        if (authUsersError) {
+          console.error('Error fetching auth users:', authUsersError);
+          setError('Failed to fetch users from auth system');
+          return;
+        }
+
+        console.log('Fetched auth users:', authUsers?.length);
+        console.log('Auth users details:', authUsers);
+
+        // Fetch all profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
@@ -28,8 +41,7 @@ export const useAdminUsers = () => {
 
         if (profilesError) {
           console.error('Error fetching profiles:', profilesError);
-          setError('Failed to fetch user profiles');
-          return;
+          // Don't fail completely, profiles might be optional for some users
         }
 
         console.log('Fetched profiles:', profiles?.length);
@@ -69,19 +81,25 @@ export const useAdminUsers = () => {
         console.log('Fetched onboarding data:', onboardingData.length);
         console.log('Onboarding data details:', onboardingData);
 
-        // Combine all data
-        const combinedUsers: AdminUser[] = profiles?.map(profile => {
-          const roles = userRoles?.filter(ur => ur.user_id === profile.id).map(ur => ur.role) || [];
-          const onboarding = onboardingData?.find(od => od.user_id === profile.id);
+        // Combine all data - start with auth users as the source of truth
+        const combinedUsers: AdminUser[] = authUsers?.map(authUser => {
+          // Find matching profile
+          const profile = profiles?.find(p => p.id === authUser.id);
+          
+          // Find user roles
+          const roles = userRoles?.filter(ur => ur.user_id === authUser.id).map(ur => ur.role) || [];
+          
+          // Find onboarding data
+          const onboarding = onboardingData?.find(od => od.user_id === authUser.id);
 
           return {
-            id: profile.id,
-            email: profile.email,
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            business_name: profile.business_name,
-            created_at: profile.created_at,
-            primary_role: profile.primary_role,
+            id: authUser.id,
+            email: authUser.email,
+            first_name: profile?.first_name || null,
+            last_name: profile?.last_name || null,
+            business_name: profile?.business_name || null,
+            created_at: authUser.created_at,
+            primary_role: profile?.primary_role || null,
             roles,
             onboarding_data: onboarding ? {
               purpose: onboarding.purpose,

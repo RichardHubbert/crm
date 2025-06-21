@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Building, Calendar, Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Building, Calendar, Edit, MoreHorizontal, Trash2, UserX } from "lucide-react";
 import { AdminUser } from "@/types/adminUser";
 import { formatDate, getRoleBadgeColor } from "@/utils/adminUsersUtils";
 
@@ -19,6 +19,8 @@ interface AdminUserTableRowProps {
 }
 
 export const AdminUserTableRow = ({ user, onEdit, onDelete }: AdminUserTableRowProps) => {
+  const hasProfileData = user.first_name || user.last_name || user.business_name;
+  
   return (
     <TableRow>
       <TableCell>
@@ -32,6 +34,12 @@ export const AdminUserTableRow = ({ user, onEdit, onDelete }: AdminUserTableRowP
           <span className="text-xs text-muted-foreground">
             ID: {user.id.slice(0, 8)}...
           </span>
+          {!hasProfileData && (
+            <div className="flex items-center gap-1 mt-1">
+              <UserX className="h-3 w-3 text-amber-500" />
+              <span className="text-xs text-amber-600">No profile</span>
+            </div>
+          )}
         </div>
       </TableCell>
       <TableCell>

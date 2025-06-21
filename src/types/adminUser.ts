@@ -2,11 +2,11 @@
 export interface AdminUser {
   id: string;
   email: string;
-  first_name?: string;
-  last_name?: string;
-  business_name?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  business_name?: string | null;
   created_at: string;
-  primary_role?: string;
+  primary_role?: string | null;
   roles?: string[];
   onboarding_data?: {
     purpose: string;
