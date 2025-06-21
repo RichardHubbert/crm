@@ -20,7 +20,7 @@ export const useAdminUsers = () => {
       try {
         console.log('Fetching all users for admin...');
 
-        // Use the new admin function to get all users from auth.users
+        // Use the updated admin function to get all users from auth.users
         const { data: authUsers, error: authUsersError } = await supabase
           .rpc('admin_get_all_users');
 
@@ -94,7 +94,7 @@ export const useAdminUsers = () => {
 
           return {
             id: authUser.id,
-            email: authUser.email,
+            email: authUser.email || '', // Handle potential null email
             first_name: profile?.first_name || null,
             last_name: profile?.last_name || null,
             business_name: profile?.business_name || null,
