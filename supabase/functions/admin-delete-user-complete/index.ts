@@ -96,11 +96,12 @@ serve(async (req) => {
       }
     )
 
-    // Step 1: Delete from public schema tables using the database function
-    // Call the function with a single parameter as expected by the current database schema
+    // Step 1: Delete from public schema tables using the updated database function
+    // Call the function with both parameters as expected by the updated database schema
     const { data: deleteResult, error: deleteError } = await supabaseAdmin
       .rpc('admin_delete_user_complete', { 
-        target_user_id: target_user_id
+        target_user_id: target_user_id,
+        admin_user_id: user.id
       })
 
     if (deleteError) {
