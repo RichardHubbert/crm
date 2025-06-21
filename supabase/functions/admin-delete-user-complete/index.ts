@@ -17,6 +17,7 @@ serve(async (req) => {
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
+      console.error('No authorization header provided')
       return new Response(
         JSON.stringify({ error: 'Authorization header required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -56,8 +57,16 @@ serve(async (req) => {
     const { data: isAdminData, error: adminError } = await supabase
       .rpc('is_admin', { user_uuid: user.id })
 
-    if (adminError || !isAdminData) {
+    if (adminError) {
       console.error('Admin check error:', adminError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to verify admin status' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!isAdminData) {
+      console.error('User is not admin:', user.id)
       return new Response(
         JSON.stringify({ error: 'Only admins can delete users' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -96,8 +105,8 @@ serve(async (req) => {
       }
     )
 
-    // Step 1: Delete from public schema tables using the updated database function
-    // Call the function with both parameters as expected by the updated database schema
+    // Step 1: Delete from public schema tables using the database function
+    console.log('Calling admin_delete_user_complete function...')
     const { data: deleteResult, error: deleteError } = await supabaseAdmin
       .rpc('admin_delete_user_complete', { 
         target_user_id: target_user_id,
@@ -105,16 +114,20 @@ serve(async (req) => {
       })
 
     if (deleteError) {
-      console.error('Error deleting from public tables:', deleteError)
+      console.error('Error calling admin_delete_user_complete:', deleteError)
       return new Response(
-        JSON.stringify({ error: `Failed to delete user data: ${deleteError.message}` }),
+        JSON.stringify({ 
+          error: `Failed to delete user data: ${deleteError.message}`,
+          details: deleteError
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Successfully deleted from public tables')
+    console.log('Database function result:', deleteResult)
 
     // Step 2: Delete from auth.users using admin client
+    console.log('Deleting user from auth system...')
     const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(target_user_id)
 
     if (authDeleteError) {
@@ -131,18 +144,30 @@ serve(async (req) => {
 
     console.log('Successfully deleted user from auth system')
 
+    // Return success response
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'User completely deleted from both application and auth system'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     )
 
   } catch (error) {
     console.error('Unexpected error in admin-delete-user-complete:', error)
+    
+    // More detailed error response
+    const errorResponse = {
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error occurred',
+      stack: error instanceof Error ? error.stack : undefined
+    }
+
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify(errorResponse),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
