@@ -20,17 +20,6 @@ export const useAdminUsers = () => {
       try {
         console.log('Fetching all users for admin...');
 
-        // First, let's check how many users exist in auth.users via a function call
-        console.log('Checking total user count in auth.users...');
-        const { data: authUsersCount, error: countError } = await supabase
-          .rpc('get_auth_users_count');
-        
-        if (!countError) {
-          console.log('Total users in auth.users:', authUsersCount);
-        } else {
-          console.log('Could not get auth users count:', countError);
-        }
-
         // First, fetch all profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
