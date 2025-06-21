@@ -70,7 +70,7 @@ const CustomersList = ({
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Revenue:</span>
-                  <span className="text-sm font-medium">${customer.revenue.toLocaleString()}</span>
+                  <span className="text-sm font-medium">£{customer.revenue.toLocaleString('en-GB')}</span>
                 </div>
               </div>
             </CardContent>
@@ -114,7 +114,7 @@ const CustomersList = ({
                 </div>
               </TableCell>
               <TableCell>{customer.industry || "-"}</TableCell>
-              <TableCell>${customer.revenue.toLocaleString()}</TableCell>
+              <TableCell>£{customer.revenue.toLocaleString('en-GB')}</TableCell>
               <TableCell>
                 <Badge variant={customer.status === "Active" ? "default" : "secondary"}>
                   {customer.status}

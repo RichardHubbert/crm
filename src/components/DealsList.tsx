@@ -99,7 +99,7 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Value:</span>
-                    <span className="text-sm font-medium">${deal.value.toLocaleString()}</span>
+                    <span className="text-sm font-medium">£{deal.value.toLocaleString('en-GB')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Probability:</span>
@@ -108,7 +108,7 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                   {deal.close_date && (
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Close Date:</span>
-                      <span className="text-sm font-medium">{new Date(deal.close_date).toLocaleDateString()}</span>
+                      <span className="text-sm font-medium">{new Date(deal.close_date).toLocaleDateString('en-GB')}</span>
                     </div>
                   )}
                 </div>
@@ -165,7 +165,7 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                   </Link>
                 </TableCell>
                 <TableCell>{deal.customer?.name || "-"}</TableCell>
-                <TableCell>${deal.value.toLocaleString()}</TableCell>
+                <TableCell>£{deal.value.toLocaleString('en-GB')}</TableCell>
                 <TableCell>
                   <Badge className={getStageColor(deal.stage)}>
                     {deal.stage}
@@ -173,7 +173,7 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                 </TableCell>
                 <TableCell>{deal.probability}%</TableCell>
                 <TableCell>
-                  {deal.close_date ? new Date(deal.close_date).toLocaleDateString() : "-"}
+                  {deal.close_date ? new Date(deal.close_date).toLocaleDateString('en-GB') : "-"}
                 </TableCell>
                 <TableCell>
                   <ActionsMenu deal={deal} />
