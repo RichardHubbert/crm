@@ -1,6 +1,5 @@
 
 import { Card } from "@/components/ui/card";
-import { OnboardingDecorations } from "./OnboardingDecorations";
 
 interface OnboardingLayoutProps {
   children: React.ReactNode;
@@ -30,8 +29,6 @@ export const OnboardingLayout = ({ children }: OnboardingLayoutProps) => {
             {children}
           </div>
         </Card>
-
-        <OnboardingDecorations />
       </div>
     </div>
   );
