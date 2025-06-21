@@ -1,12 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Briefcase, User, GraduationCap, HandHeart } from "lucide-react";
 
 interface PurposeOption {
   id: string;
   title: string;
   description: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const purposeOptions: PurposeOption[] = [
@@ -14,25 +15,25 @@ const purposeOptions: PurposeOption[] = [
     id: "work",
     title: "Work",
     description: "Managing business relationships and deals",
-    icon: "💼"
+    icon: Briefcase
   },
   {
     id: "personal",
     title: "Personal",
     description: "Organizing personal contacts and activities",
-    icon: "👤"
+    icon: User
   },
   {
     id: "school",
     title: "School",
     description: "Academic projects and networking",
-    icon: "🎓"
+    icon: GraduationCap
   },
   {
     id: "nonprofits",
     title: "Non-profits",
     description: "Community outreach and donor management",
-    icon: "🤝"
+    icon: HandHeart
   }
 ];
 
@@ -63,23 +64,28 @@ export const PurposeStep = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {purposeOptions.map((option) => (
-          <Card
-            key={option.id}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              selectedPurpose === option.id
-                ? "ring-2 ring-teal-500 border-teal-200"
-                : "border-gray-200 hover:border-gray-300"
-            }`}
-            onClick={() => onSelect(option.id)}
-          >
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl mb-3">{option.icon}</div>
-              <h3 className="font-semibold text-lg mb-2">{option.title}</h3>
-              <p className="text-gray-600 text-sm">{option.description}</p>
-            </CardContent>
-          </Card>
-        ))}
+        {purposeOptions.map((option) => {
+          const IconComponent = option.icon;
+          return (
+            <Card
+              key={option.id}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                selectedPurpose === option.id
+                  ? "ring-2 ring-teal-500 border-teal-200"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+              onClick={() => onSelect(option.id)}
+            >
+              <CardContent className="p-6 text-center">
+                <div className="flex justify-center mb-3">
+                  <IconComponent className="w-8 h-8 text-gray-600" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">{option.title}</h3>
+                <p className="text-gray-600 text-sm">{option.description}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="flex justify-between pt-4">
