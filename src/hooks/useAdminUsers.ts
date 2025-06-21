@@ -20,6 +20,17 @@ export const useAdminUsers = () => {
       try {
         console.log('Fetching all users for admin...');
 
+        // First, let's check how many users exist in auth.users via a function call
+        console.log('Checking total user count in auth.users...');
+        const { data: authUsersCount, error: countError } = await supabase
+          .rpc('get_auth_users_count');
+        
+        if (!countError) {
+          console.log('Total users in auth.users:', authUsersCount);
+        } else {
+          console.log('Could not get auth users count:', countError);
+        }
+
         // First, fetch all profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
@@ -33,6 +44,7 @@ export const useAdminUsers = () => {
         }
 
         console.log('Fetched profiles:', profiles?.length);
+        console.log('Profile details:', profiles);
 
         // Fetch user roles for all users
         const { data: userRoles, error: rolesError } = await supabase
@@ -45,6 +57,7 @@ export const useAdminUsers = () => {
         }
 
         console.log('Fetched user roles:', userRoles?.length);
+        console.log('User roles details:', userRoles);
 
         // Fetch onboarding data for all users
         const { data: onboardingData, error: onboardingError } = await supabase
@@ -57,6 +70,7 @@ export const useAdminUsers = () => {
         }
 
         console.log('Fetched onboarding data:', onboardingData?.length);
+        console.log('Onboarding data details:', onboardingData);
 
         // Combine all data
         const combinedUsers: AdminUser[] = profiles?.map(profile => {
@@ -84,6 +98,7 @@ export const useAdminUsers = () => {
         }) || [];
 
         console.log('Combined users data:', combinedUsers.length);
+        console.log('Final user data:', combinedUsers);
         setUsers(combinedUsers);
       } catch (error) {
         console.error('Unexpected error fetching users:', error);
