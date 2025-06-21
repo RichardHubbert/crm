@@ -48,17 +48,25 @@ export const useAdminUsers = () => {
         console.log('Fetched user roles:', userRoles?.length);
         console.log('User roles details:', userRoles);
 
-        // Fetch onboarding data for all users
-        const { data: onboardingData, error: onboardingError } = await supabase
-          .from('onboarding_data')
-          .select('user_id, purpose, role, team_size, company_size, industry, completed_at');
+        // Fetch onboarding data for all users - using a more robust approach
+        let onboardingData: any[] = [];
+        try {
+          const { data, error: onboardingError } = await supabase
+            .from('onboarding_data')
+            .select('user_id, purpose, role, team_size, company_size, industry, completed_at');
 
-        if (onboardingError) {
-          console.error('Error fetching onboarding data:', onboardingError);
-          // Don't set error here, onboarding might be optional
+          if (onboardingError) {
+            console.error('Error fetching onboarding data:', onboardingError);
+            // Don't fail completely, just log the error
+          } else {
+            onboardingData = data || [];
+          }
+        } catch (error) {
+          console.error('Unexpected error fetching onboarding data:', error);
+          // Continue without onboarding data
         }
 
-        console.log('Fetched onboarding data:', onboardingData?.length);
+        console.log('Fetched onboarding data:', onboardingData.length);
         console.log('Onboarding data details:', onboardingData);
 
         // Combine all data
