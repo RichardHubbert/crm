@@ -1,155 +1,293 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Table, 
-  TableBody, 
-} from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Trash2, Edit, User, Building, Calendar, Shield } from "lucide-react";
+import { AdminUser } from "@/types/adminUser";
+import { formatUKDate } from "@/lib/utils";
+import EditUserDialog from "./EditUserDialog";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import EditUserDialog from "./EditUserDialog";
-import AddUserDialog from "./AddUserDialog";
-import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
-import { AdminUsersEmptyState } from "./AdminUsersEmptyState";
-import { AdminUserTableHeader } from "./AdminUserTableHeader";
-import { AdminUserTableRow } from "./AdminUserTableRow";
-import { AdminUser } from "@/types/adminUser";
 
 interface AdminUsersTableProps {
   users: AdminUser[];
-  onUsersChange?: () => void;
+  onUsersChange: () => void;
 }
 
 export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) => {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDeleteUser = async () => {
-    if (!deletingUser) return;
-    
-    setIsDeleting(true);
-    try {
-      console.log('Starting complete user deletion for:', deletingUser.id);
+  const handleEditUser = useCallback((user: AdminUser) => {
+    console.log('Opening edit dialog for user:', user.id);
+    setEditingUser(user);
+    setShowEditDialog(true);
+  }, []);
 
-      // Get current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No active session');
+  const handleDeleteUser = useCallback((user: AdminUser) => {
+    console.log('Opening delete dialog for user:', user.id);
+    setUserToDelete(user);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!userToDelete) {
+      console.error('No user selected for deletion');
+      return;
+    }
+
+    console.log('Starting delete process for user:', userToDelete.id);
+    setIsDeleting(true);
+
+    try {
+      // Get the current session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw new Error('Failed to get authentication session');
       }
 
-      // Call the Edge Function for complete user deletion
-      const { data, error } = await supabase.functions.invoke('admin-delete-user-complete', {
-        body: { target_user_id: deletingUser.id },
+      if (!session?.access_token) {
+        console.error('No access token available');
+        throw new Error('No authentication token available');
+      }
+
+      console.log('Making request to delete user via edge function...');
+      
+      // Call the Edge Function to delete the user with more robust error handling
+      const response = await fetch(`https://nnxdtpnrwgcknhpyhowr.supabase.co/functions/v1/admin-delete-user-complete`, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          target_user_id: userToDelete.id,
+        }),
       });
 
-      if (error) {
-        console.error('Edge function error:', error);
-        throw new Error(error.message || 'Failed to delete user');
-      }
+      console.log('Delete response status:', response.status);
+      console.log('Delete response headers:', Object.fromEntries(response.headers.entries()));
 
-      if (data?.error) {
-        console.error('Edge function returned error:', data.error);
-        if (data.partial_success) {
-          toast.warning(data.message);
-          toast.info("User data deleted from application, but auth account may still exist");
-        } else {
-          throw new Error(data.error);
-        }
+      // Handle response more carefully
+      let result;
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+        console.log('Delete response JSON:', result);
       } else {
-        console.log('User deletion successful:', data);
-        toast.success("User completely deleted from both application and auth system");
+        const textResult = await response.text();
+        console.log('Delete response text:', textResult);
+        result = { error: `Unexpected response format: ${textResult}` };
       }
 
-      onUsersChange?.();
-      setDeletingUser(null);
+      if (!response.ok) {
+        console.error('Delete request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          result
+        });
+        
+        if (response.status === 500) {
+          throw new Error(`Server error (500): ${result?.error || result?.message || 'Internal server error occurred during user deletion'}`);
+        } else if (response.status === 403) {
+          throw new Error('Access denied: You do not have permission to delete users');
+        } else if (response.status === 401) {
+          throw new Error('Authentication failed: Please sign in again');
+        } else {
+          throw new Error(result?.error || result?.message || `Delete request failed with status ${response.status}`);
+        }
+      }
+
+      if (!result?.success) {
+        console.error('Delete operation unsuccessful:', result);
+        throw new Error(result?.error || result?.message || 'User deletion was not successful');
+      }
+
+      console.log('User deleted successfully:', result);
+      toast.success(`User ${userToDelete.email} has been deleted successfully`);
+      
+      // Close dialog and refresh users list
+      setShowDeleteDialog(false);
+      setUserToDelete(null);
+      onUsersChange();
+
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete user");
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('500')) {
+          toast.error(`Server Error: ${error.message}. Please try again or contact support if the issue persists.`);
+        } else if (error.message.includes('fetch')) {
+          toast.error('Network error: Unable to connect to the server. Please check your connection and try again.');
+        } else {
+          toast.error(`Delete failed: ${error.message}`);
+        }
+      } else {
+        toast.error('An unexpected error occurred while deleting the user');
+      }
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [userToDelete, onUsersChange]);
+
+  const handleUserUpdated = useCallback(() => {
+    console.log('User updated, refreshing list...');
+    setShowEditDialog(false);
+    setEditingUser(null);
+    onUsersChange();
+  }, [onUsersChange]);
 
   if (users.length === 0) {
     return (
-      <>
-        <AdminUsersEmptyState onAddUser={() => setShowAddDialog(true)} />
-        <AddUserDialog
-          open={showAddDialog}
-          onOpenChange={setShowAddDialog}
-          onUserAdded={() => onUsersChange?.()}
-        />
-      </>
+      <Card>
+        <CardHeader>
+          <CardTitle>No Users Found</CardTitle>
+          <CardDescription>
+            There are currently no users in the system.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     );
   }
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                User Management
-              </CardTitle>
-              <CardDescription>
-                View and manage all users in the system ({users.length} total)
-              </CardDescription>
-            </div>
-            <Button onClick={() => setShowAddDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add User
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <AdminUserTableHeader />
-              <TableBody>
-                {users.map((user) => (
-                  <AdminUserTableRow
-                    key={user.id}
-                    user={user}
-                    onEdit={setEditingUser}
-                    onDelete={setDeletingUser}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4">
+        {users.map((user) => (
+          <Card key={user.id} className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                      {user.email.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-lg">{user.email}</h3>
+                      {user.primary_role === 'admin' && (
+                        <Shield className="h-4 w-4 text-purple-600" />
+                      )}
+                    </div>
+                    
+                    {(user.first_name || user.last_name) && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <User className="h-3 w-3" />
+                        <span className="text-sm">
+                          {[user.first_name, user.last_name].filter(Boolean).join(' ')}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {user.business_name && (
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Building className="h-3 w-3" />
+                        <span className="text-sm">{user.business_name}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Calendar className="h-3 w-3" />
+                      <span className="text-sm">
+                        Joined {formatUKDate(user.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Badge 
+                    variant={user.primary_role === 'admin' ? 'default' : 'secondary'}
+                    className={user.primary_role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : ''}
+                  >
+                    {user.primary_role || 'user'}
+                  </Badge>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditUser(user)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteUser(user)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            
+            {user.onboarding_data && (
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  {user.onboarding_data.purpose && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">Purpose:</span>
+                      <p className="mt-1">{user.onboarding_data.purpose}</p>
+                    </div>
+                  )}
+                  
+                  {user.onboarding_data.role && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">Role:</span>
+                      <p className="mt-1">{user.onboarding_data.role}</p>
+                    </div>
+                  )}
+                  
+                  {user.onboarding_data.company_size && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">Company Size:</span>
+                      <p className="mt-1">{user.onboarding_data.company_size}</p>
+                    </div>
+                  )}
+                  
+                  {user.onboarding_data.industry && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">Industry:</span>
+                      <p className="mt-1">{user.onboarding_data.industry}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        ))}
+      </div>
 
       {editingUser && (
         <EditUserDialog
-          open={!!editingUser}
-          onOpenChange={(open) => !open && setEditingUser(null)}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
           user={editingUser}
-          onUserUpdated={() => onUsersChange?.()}
+          onUserUpdated={handleUserUpdated}
         />
       )}
 
-      <AddUserDialog
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onUserAdded={() => onUsersChange?.()}
-      />
-
       <DeleteConfirmationDialog
-        open={!!deletingUser}
-        onOpenChange={(open) => !open && setDeletingUser(null)}
-        onConfirm={handleDeleteUser}
-        title="Delete User Completely"
-        description={`Are you sure you want to completely delete ${deletingUser?.email}? This will permanently remove all user data from both the application and the authentication system. This action cannot be undone.`}
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={confirmDelete}
+        title="Delete User Account"
+        description={`Are you sure you want to permanently delete ${userToDelete?.email}? This will remove all their data and cannot be undone.`}
         isLoading={isDeleting}
       />
     </>
