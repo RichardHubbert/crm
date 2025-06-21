@@ -1,75 +1,107 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
-import { roleOptions } from "@/data/onboardingOptions";
+import { Card, CardContent } from "@/components/ui/card";
+
+interface RoleOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+const roleOptions: RoleOption[] = [
+  {
+    id: "sales_manager",
+    title: "Sales Manager",
+    description: "Leading sales teams and managing deals",
+    icon: "📊"
+  },
+  {
+    id: "sales_rep",
+    title: "Sales Representative",
+    description: "Direct sales and customer relationships",
+    icon: "🎯"
+  },
+  {
+    id: "business_owner",
+    title: "Business Owner",
+    description: "Running and growing your business",
+    icon: "👔"
+  },
+  {
+    id: "team_member",
+    title: "Team Member",
+    description: "Contributing to team goals and projects",
+    icon: "🤝"
+  },
+  {
+    id: "other",
+    title: "Other",
+    description: "Different role or multiple responsibilities",
+    icon: "⚡"
+  }
+];
 
 interface RoleStepProps {
   selectedRole: string | null;
   onSelect: (role: string) => void;
   onContinue: () => void;
+  onBack: () => void;
   isLoading: boolean;
 }
 
-export const RoleStep = ({ selectedRole, onSelect, onContinue, isLoading }: RoleStepProps) => {
+export const RoleStep = ({
+  selectedRole,
+  onSelect,
+  onContinue,
+  onBack,
+  isLoading,
+}: RoleStepProps) => {
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-2xl font-medium text-gray-900">
-          What best describes your current role?
-        </h1>
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-semibold text-gray-900">
+          What's your role?
+        </h2>
+        <p className="text-gray-600">
+          Understanding your role helps us tailor the features and workflows for you.
+        </p>
       </div>
 
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          {roleOptions.slice(0, 4).map((option) => (
-            <button
-              key={option.id}
-              onClick={() => onSelect(option.id)}
-              disabled={isLoading}
-              className={`
-                px-4 py-3 rounded-full border text-center font-medium transition-all
-                ${selectedRole === option.id
-                  ? 'border-teal-500 bg-teal-50 text-teal-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                }
-                ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          {roleOptions.slice(4).map((option) => (
-            <button
-              key={option.id}
-              onClick={() => onSelect(option.id)}
-              disabled={isLoading}
-              className={`
-                px-4 py-3 rounded-full border text-center font-medium transition-all
-                ${selectedRole === option.id
-                  ? 'border-teal-500 bg-teal-50 text-teal-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                }
-                ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {roleOptions.map((option) => (
+          <Card
+            key={option.id}
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              selectedRole === option.id
+                ? "ring-2 ring-teal-500 border-teal-200"
+                : "border-gray-200 hover:border-gray-300"
+            }`}
+            onClick={() => onSelect(option.id)}
+          >
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl mb-3">{option.icon}</div>
+              <h3 className="font-semibold text-lg mb-2">{option.title}</h3>
+              <p className="text-gray-600 text-sm">{option.description}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-between pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          disabled={isLoading}
+        >
+          Back
+        </Button>
         <Button
           onClick={onContinue}
           disabled={!selectedRole || isLoading}
-          className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-6"
-          variant="secondary"
         >
-          Continue
-          <ChevronRight className="ml-2 h-4 w-4" />
+          {isLoading ? "Processing..." : "Continue"}
         </Button>
       </div>
     </div>
