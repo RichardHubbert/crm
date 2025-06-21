@@ -14,18 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client with service role key for admin operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
-
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
@@ -35,10 +23,7 @@ serve(async (req) => {
       )
     }
 
-    // Extract the JWT token from the Authorization header
-    const jwt = authHeader.replace('Bearer ', '')
-
-    // Create client with the user's JWT token for verification
+    // Create Supabase client with the user's JWT token
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -56,7 +41,7 @@ serve(async (req) => {
     )
 
     // Get current user to verify admin status
-    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt)
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) {
       console.error('User verification error:', userError)
       return new Response(
@@ -98,6 +83,18 @@ serve(async (req) => {
     }
 
     console.log(`Admin ${user.id} attempting to delete user ${target_user_id}`)
+
+    // Create Supabase client with service role key for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
 
     // Step 1: Delete from public schema tables using the existing function
     const { data: deleteResult, error: deleteError } = await supabaseAdmin
