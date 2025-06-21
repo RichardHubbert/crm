@@ -1,5 +1,7 @@
-
 project_id = "nxiejogrelqxxkyhcwgi"
 
 [functions.admin-delete-user-complete]
+verify_jwt = false
+
+[functions.admin-get-users]
 verify_jwt = false

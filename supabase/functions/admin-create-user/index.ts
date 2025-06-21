@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -38,12 +37,14 @@ serve(async (req) => {
       throw new Error('Invalid authentication')
     }
 
-    // Check if user is admin
-    const { data: isAdmin, error: adminError } = await supabaseAdmin.rpc('is_admin', {
-      user_uuid: user.id
-    })
+    // Check if user is admin by looking directly at user_roles table
+    const { data: userRoles, error: adminError } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
 
-    if (adminError || !isAdmin) {
+    if (adminError || !userRoles || userRoles.length === 0) {
       throw new Error('Only admins can create users')
     }
 

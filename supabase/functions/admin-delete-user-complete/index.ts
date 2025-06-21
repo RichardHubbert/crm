@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -53,9 +52,12 @@ serve(async (req) => {
 
     console.log('Authenticated user:', user.id)
 
-    // Check if current user is admin using the existing function
-    const { data: isAdminData, error: adminError } = await supabase
-      .rpc('is_admin', { user_uuid: user.id })
+    // Check if current user is admin by looking directly at user_roles table
+    const { data: userRoles, error: adminError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
 
     if (adminError) {
       console.error('Admin check error:', adminError)
@@ -65,7 +67,7 @@ serve(async (req) => {
       )
     }
 
-    if (!isAdminData) {
+    if (!userRoles || userRoles.length === 0) {
       console.error('User is not admin:', user.id)
       return new Response(
         JSON.stringify({ error: 'Only admins can delete users' }),
@@ -105,28 +107,38 @@ serve(async (req) => {
       }
     )
 
-    // Step 1: Delete from public schema tables using the database function
-    console.log('Calling admin_delete_user_complete function...')
-    const { data: deleteResult, error: deleteError } = await supabaseAdmin
-      .rpc('admin_delete_user_complete', { 
-        target_user_id: target_user_id,
-        admin_user_id: user.id
-      })
+    // Delete from public schema tables directly instead of using the problematic database function
+    console.log('Deleting user data from public schema tables...')
+    
+    // Delete in the correct order to handle foreign key constraints
+    const deleteOperations = [
+      supabaseAdmin.from('onboarding_data').delete().eq('user_id', target_user_id),
+      supabaseAdmin.from('user_roles').delete().eq('user_id', target_user_id),
+      supabaseAdmin.from('user_product_assignments').delete().eq('user_id', target_user_id),
+      supabaseAdmin.from('user_subscriptions').delete().eq('user_id', target_user_id),
+      supabaseAdmin.from('contacts').delete().eq('user_id', target_user_id),
+      supabaseAdmin.from('customers').delete().eq('user_id', target_user_id),
+      supabaseAdmin.from('deals').delete().eq('user_id', target_user_id),
+      supabaseAdmin.from('profiles').delete().eq('id', target_user_id),
+    ]
 
-    if (deleteError) {
-      console.error('Error calling admin_delete_user_complete:', deleteError)
-      return new Response(
-        JSON.stringify({ 
-          error: `Failed to delete user data: ${deleteError.message}`,
-          details: deleteError
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    for (const operation of deleteOperations) {
+      const { error: deleteError } = await operation
+      if (deleteError) {
+        console.error('Error deleting user data:', deleteError)
+        return new Response(
+          JSON.stringify({ 
+            error: `Failed to delete user data: ${deleteError.message}`,
+            details: deleteError
+          }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
 
-    console.log('Database function result:', deleteResult)
+    console.log('Successfully deleted user data from public schema tables')
 
-    // Step 2: Delete from auth.users using admin client
+    // Delete from auth.users using admin client
     console.log('Deleting user from auth system...')
     const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(target_user_id)
 
