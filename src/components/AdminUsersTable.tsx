@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -33,7 +32,7 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
     
     setIsDeleting(true);
     try {
-      const { error } = await supabase.rpc('admin_delete_user_profile', {
+      const { error } = await supabase.rpc('admin_delete_user_complete', {
         target_user_id: deletingUser.id,
       });
 
@@ -41,7 +40,8 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
         throw error;
       }
 
-      toast.success("User deleted successfully");
+      toast.success("User data deleted successfully from public tables");
+      toast.info("Note: The user's auth account still exists and may need to be manually removed from the Supabase dashboard");
       onUsersChange?.();
       setDeletingUser(null);
     } catch (error) {
@@ -124,7 +124,7 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
         onOpenChange={(open) => !open && setDeletingUser(null)}
         onConfirm={handleDeleteUser}
         title="Delete User"
-        description={`Are you sure you want to delete ${deletingUser?.email}? This action cannot be undone and will remove all associated data.`}
+        description={`Are you sure you want to delete ${deletingUser?.email}? This will remove all associated data from public tables, but the user's auth account will remain and may need manual removal from the Supabase dashboard.`}
         isLoading={isDeleting}
       />
     </>

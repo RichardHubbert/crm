@@ -635,6 +635,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_delete_user_complete: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       admin_delete_user_profile: {
         Args: { target_user_id: string }
         Returns: boolean
