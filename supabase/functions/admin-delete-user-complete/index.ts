@@ -97,6 +97,7 @@ serve(async (req) => {
     )
 
     // Step 1: Delete from public schema tables using the updated function
+    // Note: The function signature is admin_delete_user_complete(target_user_id, admin_user_id)
     const { data: deleteResult, error: deleteError } = await supabaseAdmin
       .rpc('admin_delete_user_complete', { 
         target_user_id: target_user_id,
