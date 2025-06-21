@@ -19,49 +19,144 @@ export const useAdminUsers = () => {
       try {
         console.log('Fetching all users for admin...');
 
-        // Get the current session token
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          setError('Failed to get authentication session');
-          return;
+        // First, try the edge function approach
+        try {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            throw new Error('Failed to get authentication session');
+          }
+
+          if (!session?.access_token) {
+            throw new Error('No authentication token available');
+          }
+
+          console.log('Attempting to use edge function...');
+          const response = await fetch(`https://nxiejogrelqxxkyhcwgi.supabase.co/functions/v1/admin-get-users`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              console.log('Successfully fetched users from edge function:', result.users?.length);
+              setUsers(result.users || []);
+              setLoading(false);
+              return;
+            }
+          }
+          
+          console.log('Edge function failed, falling back to database approach...');
+        } catch (edgeFunctionError) {
+          console.log('Edge function error, falling back to database approach:', edgeFunctionError);
         }
 
-        if (!session?.access_token) {
-          console.error('No access token available');
-          setError('No authentication token available');
-          return;
+        // Fallback: Use the original database approach with better error handling
+        console.log('Using database approach...');
+
+        // First, check if the is_admin function exists by trying to call it
+        try {
+          const { data: authUsers, error: authUsersError } = await supabase
+            .rpc('admin_get_all_users');
+
+          if (authUsersError) {
+            console.error('Error fetching auth users:', authUsersError);
+            // If the function doesn't exist, we'll handle it gracefully
+            if (authUsersError.message.includes('function') || authUsersError.message.includes('does not exist')) {
+              throw new Error('Admin function not available - please contact support');
+            }
+            setError('Failed to fetch users from auth system');
+            return;
+          }
+
+          console.log('Fetched auth users:', authUsers?.length);
+
+          // Fetch all profiles
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (profilesError) {
+            console.error('Error fetching profiles:', profilesError);
+            // Don't fail completely, profiles might be optional for some users
+          }
+
+          console.log('Fetched profiles:', profiles?.length);
+
+          // Fetch user roles for all users
+          const { data: userRoles, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('user_id, role');
+
+          if (rolesError) {
+            console.error('Error fetching user roles:', rolesError);
+            // Don't set error here, roles might be optional
+          }
+
+          console.log('Fetched user roles:', userRoles?.length);
+
+          // Fetch onboarding data for all users
+          let onboardingData: any[] = [];
+          try {
+            const { data, error: onboardingError } = await supabase
+              .from('onboarding_data')
+              .select('user_id, purpose, role, team_size, company_size, industry, completed_at');
+
+            if (onboardingError) {
+              console.error('Error fetching onboarding data:', onboardingError);
+            } else {
+              onboardingData = data || [];
+            }
+          } catch (error) {
+            console.error('Unexpected error fetching onboarding data:', error);
+          }
+
+          console.log('Fetched onboarding data:', onboardingData.length);
+
+          // Combine all data
+          const combinedUsers: AdminUser[] = authUsers?.map(authUser => {
+            // Find matching profile
+            const profile = profiles?.find(p => p.id === authUser.id);
+            
+            // Find user roles
+            const roles = userRoles?.filter(ur => ur.user_id === authUser.id).map(ur => ur.role) || [];
+            
+            // Find onboarding data
+            const onboarding = onboardingData?.find(od => od.user_id === authUser.id);
+
+            return {
+              id: authUser.id,
+              email: authUser.email || '',
+              first_name: profile?.first_name || null,
+              last_name: profile?.last_name || null,
+              business_name: profile?.business_name || null,
+              created_at: authUser.created_at,
+              primary_role: profile?.primary_role || null,
+              roles,
+              onboarding_data: onboarding ? {
+                purpose: onboarding.purpose,
+                role: onboarding.role,
+                team_size: onboarding.team_size,
+                company_size: onboarding.company_size,
+                industry: onboarding.industry,
+                completed_at: onboarding.completed_at,
+              } : undefined,
+            };
+          }) || [];
+
+          console.log('Combined users data:', combinedUsers.length);
+          setUsers(combinedUsers);
+
+        } catch (databaseError) {
+          console.error('Database approach also failed:', databaseError);
+          setError(databaseError.message || 'Failed to fetch users from both edge function and database');
         }
 
-        // Use the new edge function instead of the problematic database function
-        const response = await fetch(`https://nxiejogrelqxxkyhcwgi.supabase.co/functions/v1/admin-get-users`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Error response from edge function:', response.status, errorText);
-          setError(`Failed to fetch users: ${response.status} ${errorText}`);
-          return;
-        }
-
-        const result = await response.json();
-
-        if (!result.success) {
-          console.error('Edge function returned error:', result.error);
-          setError(result.error || 'Failed to fetch users');
-          return;
-        }
-
-        console.log('Fetched users from edge function:', result.users?.length);
-        console.log('Users data:', result.users);
-        
-        setUsers(result.users || []);
       } catch (error) {
         console.error('Unexpected error fetching users:', error);
         setError('An unexpected error occurred');
