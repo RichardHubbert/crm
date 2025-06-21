@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuthContext } from '@/components/AuthProvider';
 import { useToast } from '@/hooks/use-toast';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface AuthDialogProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
         : await signIn(email, password);
 
       if (error) {
+        console.error('Authentication error:', error);
         toast({
           title: "Authentication Error",
           description: error.message,
@@ -52,6 +54,7 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
         setPassword('');
       }
     } catch (error) {
+      console.error('Unexpected authentication error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -68,6 +71,12 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
         {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
+        <VisuallyHidden>
+          <DialogTitle>{mode === 'signup' ? 'Create Account' : 'Sign In'}</DialogTitle>
+          <DialogDescription>
+            {mode === 'signup' ? 'Create an account to get started' : 'Sign in to your account'}
+          </DialogDescription>
+        </VisuallyHidden>
         <Card className="border-0 shadow-none">
           <CardHeader>
             <CardTitle>{mode === 'signup' ? 'Create Account' : 'Sign In'}</CardTitle>
