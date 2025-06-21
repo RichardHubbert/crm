@@ -1,44 +1,44 @@
 
 export const OnboardingDecorations = () => {
   return (
-    <div className="fixed top-1/2 right-8 transform -translate-y-1/2 space-y-4 hidden lg:block">
-      <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3">
-        <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center">
-          <div className="w-2 h-2 bg-white rounded-full"></div>
+    <div className="fixed top-1/2 right-8 transform -translate-y-1/2 space-y-6 hidden lg:block">
+      <div className="w-72 h-20 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center px-6 space-x-4 hover:shadow-xl transition-shadow duration-300">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-3 h-3 bg-white rounded-full"></div>
         </div>
-        <div className="flex-1">
-          <div className="h-2 bg-gray-200 rounded mb-1"></div>
-          <div className="h-2 bg-gray-100 rounded w-2/3"></div>
+        <div className="flex-1 space-y-2">
+          <div className="h-3 bg-slate-200 rounded-full"></div>
+          <div className="h-2 bg-slate-100 rounded-full w-4/5"></div>
         </div>
       </div>
       
-      <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3 ml-8">
-        <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-500 rounded-full flex items-center justify-center">
-          <div className="w-2 h-2 bg-white rounded-full"></div>
+      <div className="w-72 h-20 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center px-6 space-x-4 ml-8 hover:shadow-xl transition-shadow duration-300">
+        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-3 h-3 bg-white rounded-full"></div>
         </div>
-        <div className="flex-1">
-          <div className="h-2 bg-gray-200 rounded mb-1"></div>
-          <div className="h-2 bg-gray-100 rounded w-3/4"></div>
-        </div>
-      </div>
-
-      <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3">
-        <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
-          <div className="w-2 h-2 bg-white rounded-full"></div>
-        </div>
-        <div className="flex-1">
-          <div className="h-2 bg-gray-200 rounded mb-1"></div>
-          <div className="h-2 bg-gray-100 rounded w-1/2"></div>
+        <div className="flex-1 space-y-2">
+          <div className="h-3 bg-slate-200 rounded-full"></div>
+          <div className="h-2 bg-slate-100 rounded-full w-3/4"></div>
         </div>
       </div>
 
-      <div className="w-64 h-16 bg-white rounded-lg shadow-sm border flex items-center px-4 space-x-3 ml-4">
-        <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center">
-          <div className="w-2 h-2 bg-white rounded-full"></div>
+      <div className="w-72 h-20 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center px-6 space-x-4 hover:shadow-xl transition-shadow duration-300">
+        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-3 h-3 bg-white rounded-full"></div>
         </div>
-        <div className="flex-1">
-          <div className="h-2 bg-gray-200 rounded mb-1"></div>
-          <div className="h-2 bg-gray-100 rounded w-2/3"></div>
+        <div className="flex-1 space-y-2">
+          <div className="h-3 bg-slate-200 rounded-full"></div>
+          <div className="h-2 bg-slate-100 rounded-full w-2/3"></div>
+        </div>
+      </div>
+
+      <div className="w-72 h-20 bg-white rounded-2xl shadow-lg border border-slate-100 flex items-center px-6 space-x-4 ml-4 hover:shadow-xl transition-shadow duration-300">
+        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-3 h-3 bg-white rounded-full"></div>
+        </div>
+        <div className="flex-1 space-y-2">
+          <div className="h-3 bg-slate-200 rounded-full"></div>
+          <div className="h-2 bg-slate-100 rounded-full w-5/6"></div>
         </div>
       </div>
     </div>
