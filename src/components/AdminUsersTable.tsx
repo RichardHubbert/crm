@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -32,16 +33,40 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
     
     setIsDeleting(true);
     try {
-      const { error } = await supabase.rpc('admin_delete_user_complete', {
-        target_user_id: deletingUser.id,
+      console.log('Starting complete user deletion for:', deletingUser.id);
+
+      // Get current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session');
+      }
+
+      // Call the Edge Function for complete user deletion
+      const { data, error } = await supabase.functions.invoke('admin-delete-user-complete', {
+        body: { target_user_id: deletingUser.id },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) {
-        throw error;
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to delete user');
       }
 
-      toast.success("User data deleted successfully from public tables");
-      toast.info("Note: The user's auth account still exists and may need to be manually removed from the Supabase dashboard");
+      if (data?.error) {
+        console.error('Edge function returned error:', data.error);
+        if (data.partial_success) {
+          toast.warning(data.message);
+          toast.info("User data deleted from application, but auth account may still exist");
+        } else {
+          throw new Error(data.error);
+        }
+      } else {
+        console.log('User deletion successful:', data);
+        toast.success("User completely deleted from both application and auth system");
+      }
+
       onUsersChange?.();
       setDeletingUser(null);
     } catch (error) {
@@ -123,8 +148,8 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
         open={!!deletingUser}
         onOpenChange={(open) => !open && setDeletingUser(null)}
         onConfirm={handleDeleteUser}
-        title="Delete User"
-        description={`Are you sure you want to delete ${deletingUser?.email}? This will remove all associated data from public tables, but the user's auth account will remain and may need manual removal from the Supabase dashboard.`}
+        title="Delete User Completely"
+        description={`Are you sure you want to completely delete ${deletingUser?.email}? This will permanently remove all user data from both the application and the authentication system. This action cannot be undone.`}
         isLoading={isDeleting}
       />
     </>
