@@ -26,18 +26,6 @@ serve(async (req) => {
       }
     )
 
-    // Create client with anon key to verify the requesting user is an admin
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
-
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
@@ -47,23 +35,44 @@ serve(async (req) => {
       )
     }
 
-    // Set the auth header for the anon client
-    supabase.auth.setAuth(authHeader.replace('Bearer ', ''))
+    // Extract the JWT token from the Authorization header
+    const jwt = authHeader.replace('Bearer ', '')
+
+    // Create client with the user's JWT token for verification
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        },
+        global: {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+      }
+    )
 
     // Get current user to verify admin status
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt)
     if (userError || !user) {
+      console.error('User verification error:', userError)
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
+    console.log('Authenticated user:', user.id)
+
     // Check if current user is admin using the existing function
     const { data: isAdminData, error: adminError } = await supabase
       .rpc('is_admin', { user_uuid: user.id })
 
     if (adminError || !isAdminData) {
+      console.error('Admin check error:', adminError)
       return new Response(
         JSON.stringify({ error: 'Only admins can delete users' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
