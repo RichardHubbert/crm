@@ -94,15 +94,7 @@ export const UserInfoStep = ({
         </CardContent>
       </Card>
 
-      <div className="flex justify-between pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          disabled={isLoading}
-        >
-          Back
-        </Button>
+      <div className="flex justify-end pt-4">
         <Button
           type="submit"
           disabled={!canContinue || isLoading}
