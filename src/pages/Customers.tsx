@@ -26,6 +26,8 @@ const Customers = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const { customers, loading, error, refetch, deleteCustomers } = useCustomers();
 
+  console.log('Customers page state:', { customers, loading, error });
+
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -98,13 +100,17 @@ const Customers = () => {
           <UserInfo />
         </div>
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <p>Loading customers...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   if (error) {
+    console.error('Customer page error:', error);
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
@@ -115,7 +121,10 @@ const Customers = () => {
           <UserInfo />
         </div>
         <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-red-500">Error: {error}</p>
+          <div className="text-center">
+            <p className="text-red-500 mb-4">Error loading customers: {error}</p>
+            <Button onClick={() => refetch()}>Retry</Button>
+          </div>
         </div>
       </div>
     );

@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Building2, Edit } from "lucide-react";
+import { formatGBP } from "@/lib/utils";
 
 interface Customer {
   id: string;
@@ -33,6 +34,17 @@ const CustomersList = ({
 }: CustomersListProps) => {
   const allSelected = customers.length > 0 && selectedCustomers.length === customers.length;
   const someSelected = selectedCustomers.length > 0;
+
+  // Safe revenue formatting function
+  const formatRevenue = (revenue: number | null | undefined): string => {
+    try {
+      const numericValue = Number(revenue) || 0;
+      return formatGBP(numericValue);
+    } catch (error) {
+      console.error('Error formatting revenue:', error, revenue);
+      return '£0';
+    }
+  };
 
   if (view === "grid") {
     return (
@@ -70,7 +82,7 @@ const CustomersList = ({
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Revenue:</span>
-                  <span className="text-sm font-medium">£{customer.revenue.toLocaleString('en-GB')}</span>
+                  <span className="text-sm font-medium">{formatRevenue(customer.revenue)}</span>
                 </div>
               </div>
             </CardContent>
@@ -114,7 +126,7 @@ const CustomersList = ({
                 </div>
               </TableCell>
               <TableCell>{customer.industry || "-"}</TableCell>
-              <TableCell>£{customer.revenue.toLocaleString('en-GB')}</TableCell>
+              <TableCell>{formatRevenue(customer.revenue)}</TableCell>
               <TableCell>
                 <Badge variant={customer.status === "Active" ? "default" : "secondary"}>
                   {customer.status}

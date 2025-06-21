@@ -20,17 +20,33 @@ export const useCustomers = () => {
 
   const fetchCustomers = async () => {
     try {
+      console.log('Fetching customers...');
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('customers')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Customers response:', { data, error });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       
-      setCustomers(data || []);
+      // Ensure revenue is a number for all customers
+      const processedData = (data || []).map(customer => ({
+        ...customer,
+        revenue: Number(customer.revenue) || 0
+      }));
+      
+      console.log('Processed customers:', processedData);
+      setCustomers(processedData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching customers:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching customers');
     } finally {
       setLoading(false);
     }
