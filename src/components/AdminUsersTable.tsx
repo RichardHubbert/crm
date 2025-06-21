@@ -61,7 +61,7 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
 
       console.log('Making request to delete user via edge function...');
       
-      // Call the Edge Function to delete the user with more robust error handling
+      // Call the Edge Function to delete the user with simplified error handling
       const response = await fetch(`https://nnxdtpnrwgcknhpyhowr.supabase.co/functions/v1/admin-delete-user-complete`, {
         method: 'POST',
         headers: {
@@ -74,60 +74,72 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
       });
 
       console.log('Delete response status:', response.status);
-      console.log('Delete response headers:', Object.fromEntries(response.headers.entries()));
 
-      // Handle response more carefully
+      // Handle response more simply and robustly
       let result;
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        result = await response.json();
-        console.log('Delete response JSON:', result);
-      } else {
-        const textResult = await response.text();
-        console.log('Delete response text:', textResult);
-        result = { error: `Unexpected response format: ${textResult}` };
+      try {
+        const responseText = await response.text();
+        console.log('Delete response text:', responseText);
+        
+        // Try to parse as JSON, but handle cases where it might not be valid JSON
+        if (responseText.trim()) {
+          try {
+            result = JSON.parse(responseText);
+          } catch (parseError) {
+            console.log('Response is not valid JSON, treating as text:', parseError);
+            result = { message: responseText };
+          }
+        } else {
+          result = { message: 'Empty response' };
+        }
+      } catch (textError) {
+        console.error('Error reading response text:', textError);
+        result = { error: 'Failed to read response' };
       }
 
-      if (!response.ok) {
-        console.error('Delete request failed:', {
+      console.log('Parsed result:', result);
+
+      // Check if the response indicates success
+      const isSuccess = response.ok || response.status === 200 || result?.success === true;
+      
+      if (isSuccess) {
+        console.log('User deletion successful');
+        toast.success(`User ${userToDelete.email} has been deleted successfully`);
+        
+        // Close dialog and refresh users list
+        setShowDeleteDialog(false);
+        setUserToDelete(null);
+        onUsersChange();
+      } else {
+        // Handle various error scenarios
+        console.error('Delete operation failed:', {
           status: response.status,
-          statusText: response.statusText,
           result
         });
+
+        let errorMessage = 'Failed to delete user';
         
-        if (response.status === 500) {
-          throw new Error(`Server error (500): ${result?.error || result?.message || 'Internal server error occurred during user deletion'}`);
-        } else if (response.status === 403) {
-          throw new Error('Access denied: You do not have permission to delete users');
+        if (response.status === 403) {
+          errorMessage = 'Access denied: You do not have permission to delete users';
         } else if (response.status === 401) {
-          throw new Error('Authentication failed: Please sign in again');
+          errorMessage = 'Authentication failed: Please sign in again';
+        } else if (result?.error) {
+          errorMessage = result.error;
+        } else if (result?.message) {
+          errorMessage = result.message;
         } else {
-          throw new Error(result?.error || result?.message || `Delete request failed with status ${response.status}`);
+          errorMessage = `Delete request failed with status ${response.status}`;
         }
-      }
 
-      if (!result?.success) {
-        console.error('Delete operation unsuccessful:', result);
-        throw new Error(result?.error || result?.message || 'User deletion was not successful');
+        throw new Error(errorMessage);
       }
-
-      console.log('User deleted successfully:', result);
-      toast.success(`User ${userToDelete.email} has been deleted successfully`);
-      
-      // Close dialog and refresh users list
-      setShowDeleteDialog(false);
-      setUserToDelete(null);
-      onUsersChange();
 
     } catch (error) {
       console.error('Error deleting user:', error);
       
-      // Provide more specific error messages
+      // Provide user-friendly error messages
       if (error instanceof Error) {
-        if (error.message.includes('500')) {
-          toast.error(`Server Error: ${error.message}. Please try again or contact support if the issue persists.`);
-        } else if (error.message.includes('fetch')) {
+        if (error.message.includes('fetch')) {
           toast.error('Network error: Unable to connect to the server. Please check your connection and try again.');
         } else {
           toast.error(`Delete failed: ${error.message}`);
