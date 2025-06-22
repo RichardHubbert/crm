@@ -1,5 +1,15 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Custom type for the user object returned by the RPC function
+interface RpcUser {
+  id: string;
+  email: string;
+  raw_user_meta_data?: {
+    first_name?: string;
+    last_name?: string;
+  };
+}
+
 export interface TeamMember {
   user_id: string;
   email: string;
@@ -35,23 +45,30 @@ export const teamService = {
 
       if (membersError) throw membersError;
 
-      const userIds = members.map(m => m.user_id);
+      const userIds = members.map((m) => m.user_id);
       if (userIds.length === 0) {
         return { ...team, members: [] };
       }
 
-      // Get member details from the users and profiles tables
-      const { data: users, error: usersError } = await supabase.rpc('admin_get_all_users');
+      // Get member details from the auth.users and profiles tables
+      const { data: rpcUsers, error: usersError } = await supabase.rpc('admin_get_all_users');
+      
       if (usersError) throw usersError;
+
+      const users = rpcUsers as RpcUser[];
 
       const memberDetails = users
         .filter(u => userIds.includes(u.id))
-        .map(u => ({
-          user_id: u.id,
-          email: u.email,
-          first_name: u.raw_user_meta_data?.first_name,
-          last_name: u.raw_user_meta_data?.last_name,
-        }));
+        .map(u => {
+          // The RPC function returns profile data inside raw_user_meta_data
+          const profile = u.raw_user_meta_data;
+          return {
+            user_id: u.id,
+            email: u.email || 'No email',
+            first_name: profile?.first_name,
+            last_name: profile?.last_name,
+          };
+        });
         
       return { ...team, members: memberDetails };
     });
