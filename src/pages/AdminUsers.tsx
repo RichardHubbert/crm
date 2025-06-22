@@ -1,4 +1,3 @@
-
 import { AdminUsersTable } from "@/components/AdminUsersTable";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -112,7 +111,7 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       ) : (
-        <AdminUsersTable users={users} onUsersChange={handleUsersChange} />
+        <AdminUsersTable users={users} onUsersChange={handleUsersChange} currentUser={user} />
       )}
     </div>
   );

@@ -6,20 +6,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit, User, Building, Calendar, Shield, Search, X } from "lucide-react";
+import { Trash2, Edit, User, Building, Calendar, Shield, Search, X, Crown } from "lucide-react";
 import { AdminUser } from "@/types/adminUser";
 import { formatUKDate } from "@/lib/utils";
 import EditUserDialog from "./EditUserDialog";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { User as AuthUser } from "@supabase/supabase-js";
 
 interface AdminUsersTableProps {
   users: AdminUser[];
   onUsersChange: () => void;
+  currentUser: AuthUser | null;
 }
 
-export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) => {
+export const AdminUsersTable = ({ users, onUsersChange, currentUser }: AdminUsersTableProps) => {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -387,114 +389,141 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filteredUsers.map((user) => (
-            <Card key={user.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src="" />
-                      <AvatarFallback className="bg-blue-100 text-blue-600">
-                        {user.email.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">{user.email}</h3>
-                        {user.primary_role === 'admin' && (
-                          <Shield className="h-4 w-4 text-purple-600" />
-                        )}
-                      </div>
+          {filteredUsers.map((user) => {
+            const isCurrentUser = currentUser && user.id === currentUser.id;
+            
+            return (
+              <Card 
+                key={user.id} 
+                className={`hover:shadow-md transition-shadow ${
+                  isCurrentUser 
+                    ? 'border-2 border-purple-400 bg-purple-50/50 shadow-lg' 
+                    : ''
+                }`}
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src="" />
+                        <AvatarFallback className={`${
+                          isCurrentUser 
+                            ? 'bg-purple-200 text-purple-700' 
+                            : 'bg-blue-100 text-blue-600'
+                        }`}>
+                          {user.email.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       
-                      {(user.first_name || user.last_name) && (
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-lg">{user.email}</h3>
+                          {user.primary_role === 'admin' && (
+                            <Shield className="h-4 w-4 text-purple-600" />
+                          )}
+                          {isCurrentUser && (
+                            <div className="flex items-center gap-1">
+                              <Crown className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-purple-700 bg-purple-100 px-2 py-1 rounded-full">
+                                You
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {(user.first_name || user.last_name) && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <User className="h-3 w-3" />
+                            <span className="text-sm">
+                              {[user.first_name, user.last_name].filter(Boolean).join(' ')}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {user.business_name && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Building className="h-3 w-3" />
+                            <span className="text-sm">{user.business_name}</span>
+                          </div>
+                        )}
+                        
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <User className="h-3 w-3" />
+                          <Calendar className="h-3 w-3" />
                           <span className="text-sm">
-                            {[user.first_name, user.last_name].filter(Boolean).join(' ')}
+                            Joined {formatUKDate(user.created_at)}
                           </span>
                         </div>
-                      )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant={user.primary_role === 'admin' ? 'default' : 'secondary'}
+                        className={user.primary_role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : ''}
+                      >
+                        {user.primary_role || 'user'}
+                      </Badge>
                       
-                      {user.business_name && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Building className="h-3 w-3" />
-                          <span className="text-sm">{user.business_name}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditUser(user)}
+                        disabled={isCurrentUser}
+                        title={isCurrentUser ? "You cannot edit your own account here" : "Edit user"}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteUser(user)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        disabled={isCurrentUser}
+                        title={isCurrentUser ? "You cannot delete your own account" : "Delete user"}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                {user.onboarding_data && (
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      {user.onboarding_data.purpose && (
+                        <div>
+                          <span className="font-medium text-muted-foreground">Purpose:</span>
+                          <p className="mt-1">{user.onboarding_data.purpose}</p>
                         </div>
                       )}
                       
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        <span className="text-sm">
-                          Joined {formatUKDate(user.created_at)}
-                        </span>
-                      </div>
+                      {user.onboarding_data.role && (
+                        <div>
+                          <span className="font-medium text-muted-foreground">Role:</span>
+                          <p className="mt-1">{user.onboarding_data.role}</p>
+                        </div>
+                      )}
+                      
+                      {user.onboarding_data.company_size && (
+                        <div>
+                          <span className="font-medium text-muted-foreground">Company Size:</span>
+                          <p className="mt-1">{user.onboarding_data.company_size}</p>
+                        </div>
+                      )}
+                      
+                      {user.onboarding_data.industry && (
+                        <div>
+                          <span className="font-medium text-muted-foreground">Industry:</span>
+                          <p className="mt-1">{user.onboarding_data.industry}</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={user.primary_role === 'admin' ? 'default' : 'secondary'}
-                      className={user.primary_role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : ''}
-                    >
-                      {user.primary_role || 'user'}
-                    </Badge>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteUser(user)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              {user.onboarding_data && (
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    {user.onboarding_data.purpose && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">Purpose:</span>
-                        <p className="mt-1">{user.onboarding_data.purpose}</p>
-                      </div>
-                    )}
-                    
-                    {user.onboarding_data.role && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">Role:</span>
-                        <p className="mt-1">{user.onboarding_data.role}</p>
-                      </div>
-                    )}
-                    
-                    {user.onboarding_data.company_size && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">Company Size:</span>
-                        <p className="mt-1">{user.onboarding_data.company_size}</p>
-                      </div>
-                    )}
-                    
-                    {user.onboarding_data.industry && (
-                      <div>
-                        <span className="font-medium text-muted-foreground">Industry:</span>
-                        <p className="mt-1">{user.onboarding_data.industry}</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          ))}
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 

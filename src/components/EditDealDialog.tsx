@@ -100,13 +100,13 @@ const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDia
           </div>
 
           <div>
-            <Label htmlFor="value">Deal Value</Label>
+            <Label htmlFor="value">Deal Value (GBP)</Label>
             <Input
               id="value"
               type="number"
               value={formData.value}
               onChange={(e) => handleInputChange('value', e.target.value)}
-              placeholder="0"
+              placeholder="0.00"
               min="0"
               step="0.01"
             />

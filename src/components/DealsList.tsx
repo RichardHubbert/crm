@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { Handshake, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import EditDealDialog from "./EditDealDialog";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { Deal } from "@/hooks/useDeals";
+import { formatGBP } from "@/lib/utils";
 
 interface DealsListProps {
   deals: Deal[];
@@ -99,7 +99,7 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Value:</span>
-                    <span className="text-sm font-medium">£{deal.value.toLocaleString('en-GB')}</span>
+                    <span className="text-sm font-medium">{formatGBP(deal.value)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Probability:</span>
@@ -165,7 +165,7 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                   </Link>
                 </TableCell>
                 <TableCell>{deal.customer?.name || "-"}</TableCell>
-                <TableCell>£{deal.value.toLocaleString('en-GB')}</TableCell>
+                <TableCell>{formatGBP(deal.value)}</TableCell>
                 <TableCell>
                   <Badge className={getStageColor(deal.stage)}>
                     {deal.stage}

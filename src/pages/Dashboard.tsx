@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { UserInfo } from "@/components/UserInfo";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useDeals } from "@/hooks/useDeals";
 import { useContacts } from "@/hooks/useContacts";
+import { formatGBP } from "@/lib/utils";
 
 const Dashboard = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -110,7 +110,7 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{formatGBP(totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               Total customer revenue
             </p>

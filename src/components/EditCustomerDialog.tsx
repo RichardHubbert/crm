@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -108,14 +107,14 @@ const EditCustomerDialog = ({ open, onOpenChange, customer }: EditCustomerDialog
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="revenue">Revenue</Label>
+          <div>
+            <Label htmlFor="revenue">Revenue (GBP)</Label>
             <Input
               id="revenue"
               type="number"
               value={formData.revenue}
               onChange={(e) => handleInputChange("revenue", e.target.value)}
-              placeholder="0"
+              placeholder="0.00"
               min="0"
               step="0.01"
             />

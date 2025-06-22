@@ -8,6 +8,7 @@ import { ArrowLeft, Edit, Calendar, Handshake, Building2, Percent } from "lucide
 import { supabase } from "@/integrations/supabase/client";
 import { UserInfo } from "@/components/UserInfo";
 import { Deal } from "@/hooks/useDeals";
+import { formatGBP } from "@/lib/utils";
 
 const DealView = () => {
   const { id } = useParams<{ id: string }>();
@@ -147,7 +148,7 @@ const DealView = () => {
               <div className="text-sm font-medium">Value</div>
               <div className="text-gray-600">
                 <Handshake className="mr-2 inline-block h-4 w-4" />
-                {deal.value.toLocaleString()}
+                {formatGBP(deal.value)}
               </div>
             </div>
           </div>

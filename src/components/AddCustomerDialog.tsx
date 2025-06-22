@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -115,13 +114,13 @@ const AddCustomerDialog = ({ onCustomerAdded }: AddCustomerDialogProps) => {
           </div>
 
           <div>
-            <Label htmlFor="revenue">Revenue</Label>
+            <Label htmlFor="revenue">Revenue (GBP)</Label>
             <Input
               id="revenue"
               type="number"
               value={formData.revenue}
               onChange={(e) => handleInputChange('revenue', e.target.value)}
-              placeholder="0"
+              placeholder="0.00"
               min="0"
               step="0.01"
             />
