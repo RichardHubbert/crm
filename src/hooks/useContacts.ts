@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -56,9 +55,11 @@ export const useContacts = () => {
           *,
           customer:customers(name)
         `)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) throw new Error('Failed to create contact');
       
       setContacts(prev => [data, ...prev]);
       return data;
@@ -77,9 +78,11 @@ export const useContacts = () => {
           *,
           customer:customers(name)
         `)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) throw new Error('Failed to update contact');
       
       setContacts(prev => prev.map(contact => 
         contact.id === contactId ? data : contact

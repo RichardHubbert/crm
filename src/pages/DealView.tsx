@@ -27,13 +27,17 @@ const DealView = () => {
             customer:customers(name)
           `)
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           throw error;
         }
 
-        setDeal(data || null);
+        if (!data) {
+          throw new Error('Deal not found');
+        }
+
+        setDeal(data);
       } catch (error: any) {
         setError(error.message || "An error occurred while fetching the deal.");
       } finally {

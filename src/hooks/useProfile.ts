@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/components/AuthProvider';
@@ -29,9 +28,9 @@ export const useProfile = () => {
           .from('onboarding_data')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
           console.error('Error fetching profile data:', error);
           return;
         }

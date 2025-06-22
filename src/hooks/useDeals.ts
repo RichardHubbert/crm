@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -56,9 +55,11 @@ export const useDeals = () => {
           *,
           customer:customers(name)
         `)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) throw new Error('Failed to create deal');
       
       setDeals(prev => [data, ...prev]);
       return data;
@@ -77,9 +78,11 @@ export const useDeals = () => {
           *,
           customer:customers(name)
         `)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) throw new Error('Failed to update deal');
       
       setDeals(prev => prev.map(deal => deal.id === id ? data : deal));
       return data;

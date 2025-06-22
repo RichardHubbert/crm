@@ -78,15 +78,48 @@ const ProtectedRoutes = () => {
         
         // Then check database for authoritative answer
         try {
+          // Add a small delay to ensure auth is ready
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           const { data, error } = await supabase
             .from('onboarding_data')
             .select('id')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle(); // Use maybeSingle instead of single to avoid 406 error
 
-          if (error && error.code !== 'PGRST116') {
+          if (error) {
             console.error('Error checking onboarding status:', error);
-            // Fall back to localStorage
+            // If it's an auth error, try again after a short delay
+            if (error.code === 'PGRST301' || error.message?.includes('JWT')) {
+              console.log('Auth error, retrying after delay...');
+              await new Promise(resolve => setTimeout(resolve, 500));
+              const { data: retryData, error: retryError } = await supabase
+                .from('onboarding_data')
+                .select('id')
+                .eq('user_id', user.id)
+                .maybeSingle();
+              
+              if (retryError) {
+                console.error('Retry failed:', retryError);
+                setHasCompletedOnboarding(localCompleted === 'true');
+                return;
+              }
+              
+              const dbCompleted = !!retryData;
+              console.log('Database onboarding check (retry):', dbCompleted);
+              
+              // Sync localStorage with database
+              if (dbCompleted && localCompleted !== 'true') {
+                localStorage.setItem(`onboarding_completed_${user.id}`, 'true');
+              } else if (!dbCompleted && localCompleted === 'true') {
+                localStorage.removeItem(`onboarding_completed_${user.id}`);
+              }
+              
+              setHasCompletedOnboarding(dbCompleted);
+              return;
+            }
+            
+            // Fall back to localStorage for other errors
             setHasCompletedOnboarding(localCompleted === 'true');
             return;
           }

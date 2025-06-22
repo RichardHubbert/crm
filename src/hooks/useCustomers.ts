@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -61,9 +60,11 @@ export const useCustomers = () => {
         .from('customers')
         .insert([{ ...customerData, user_id: user.id }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) throw new Error('Failed to create customer');
       
       setCustomers(prev => [data, ...prev]);
       return data;
@@ -79,9 +80,11 @@ export const useCustomers = () => {
         .update(customerData)
         .eq('id', customerId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) throw new Error('Failed to update customer');
       
       setCustomers(prev => prev.map(customer => 
         customer.id === customerId ? data : customer
