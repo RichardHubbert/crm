@@ -1,9 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trash2, Edit, User, Building, Calendar, Shield } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Trash2, Edit, User, Building, Calendar, Shield, Search, X } from "lucide-react";
 import { AdminUser } from "@/types/adminUser";
 import { formatUKDate } from "@/lib/utils";
 import EditUserDialog from "./EditUserDialog";
@@ -22,6 +25,67 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [purposeFilter, setPurposeFilter] = useState<string>("all");
+  const [industryFilter, setIndustryFilter] = useState<string>("all");
+
+  // Get unique values for filters
+  const uniqueRoles = useMemo(() => {
+    const roles = users.map(user => user.primary_role).filter(Boolean) as string[];
+    return [...new Set(roles)];
+  }, [users]);
+
+  const uniquePurposes = useMemo(() => {
+    const purposes = users
+      .map(user => user.onboarding_data?.purpose)
+      .filter(Boolean) as string[];
+    return [...new Set(purposes)];
+  }, [users]);
+
+  const uniqueIndustries = useMemo(() => {
+    const industries = users
+      .map(user => user.onboarding_data?.industry)
+      .filter(Boolean) as string[];
+    return [...new Set(industries)];
+  }, [users]);
+
+  // Filter users based on search criteria
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      // Text search
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = searchTerm === "" || 
+        user.email.toLowerCase().includes(searchLower) ||
+        (user.first_name && user.first_name.toLowerCase().includes(searchLower)) ||
+        (user.last_name && user.last_name.toLowerCase().includes(searchLower)) ||
+        (user.business_name && user.business_name.toLowerCase().includes(searchLower)) ||
+        (user.onboarding_data?.role && user.onboarding_data.role.toLowerCase().includes(searchLower)) ||
+        (user.onboarding_data?.company_size && user.onboarding_data.company_size.toLowerCase().includes(searchLower));
+
+      // Role filter
+      const matchesRole = roleFilter === "all" || user.primary_role === roleFilter;
+
+      // Purpose filter
+      const matchesPurpose = purposeFilter === "all" || user.onboarding_data?.purpose === purposeFilter;
+
+      // Industry filter
+      const matchesIndustry = industryFilter === "all" || user.onboarding_data?.industry === industryFilter;
+
+      return matchesSearch && matchesRole && matchesPurpose && matchesIndustry;
+    });
+  }, [users, searchTerm, roleFilter, purposeFilter, industryFilter]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setRoleFilter("all");
+    setPurposeFilter("all");
+    setIndustryFilter("all");
+  };
+
+  const hasActiveFilters = searchTerm || roleFilter !== "all" || purposeFilter !== "all" || industryFilter !== "all";
 
   const handleEditUser = useCallback((user: AdminUser) => {
     console.log('Opening edit dialog for user:', user.id);
@@ -190,116 +254,247 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
 
   return (
     <>
-      <div className="grid gap-4">
-        {users.map((user) => (
-          <Card key={user.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src="" />
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
-                      {user.email.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg">{user.email}</h3>
-                      {user.primary_role === 'admin' && (
-                        <Shield className="h-4 w-4 text-purple-600" />
-                      )}
-                    </div>
+      {/* Search and Filter Section */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5" />
+            Search & Filter Users
+          </CardTitle>
+          <CardDescription>
+            Search by email, name, business, or filter by role, purpose, and industry
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Search Input */}
+          <div className="space-y-2">
+            <Label htmlFor="search">Search Users</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search"
+                placeholder="Search by email, name, business, role, or company size..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          {/* Filter Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Role Filter */}
+            <div className="space-y-2">
+              <Label htmlFor="role-filter">Role</Label>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger id="role-filter">
+                  <SelectValue placeholder="All roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All roles</SelectItem>
+                  {uniqueRoles.map(role => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Purpose Filter */}
+            <div className="space-y-2">
+              <Label htmlFor="purpose-filter">Purpose</Label>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter}>
+                <SelectTrigger id="purpose-filter">
+                  <SelectValue placeholder="All purposes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All purposes</SelectItem>
+                  {uniquePurposes.map(purpose => (
+                    <SelectItem key={purpose} value={purpose}>
+                      {purpose}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Industry Filter */}
+            <div className="space-y-2">
+              <Label htmlFor="industry-filter">Industry</Label>
+              <Select value={industryFilter} onValueChange={setIndustryFilter}>
+                <SelectTrigger id="industry-filter">
+                  <SelectValue placeholder="All industries" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All industries</SelectItem>
+                  {uniqueIndustries.map(industry => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Results and Clear Filters */}
+          <div className="flex items-center justify-between pt-2">
+            <div className="text-sm text-muted-foreground">
+              Showing {filteredUsers.length} of {users.length} users
+              {hasActiveFilters && (
+                <span className="ml-2 text-blue-600">
+                  (filtered)
+                </span>
+              )}
+            </div>
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
+                className="flex items-center gap-2"
+              >
+                <X className="h-4 w-4" />
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Users List */}
+      {filteredUsers.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>No Users Found</CardTitle>
+            <CardDescription>
+              {hasActiveFilters 
+                ? "No users match your current search criteria. Try adjusting your filters."
+                : "There are currently no users in the system."
+              }
+            </CardDescription>
+          </CardHeader>
+          {hasActiveFilters && (
+            <CardContent>
+              <Button variant="outline" onClick={clearFilters}>
+                Clear All Filters
+              </Button>
+            </CardContent>
+          )}
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredUsers.map((user) => (
+            <Card key={user.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src="" />
+                      <AvatarFallback className="bg-blue-100 text-blue-600">
+                        {user.email.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     
-                    {(user.first_name || user.last_name) && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-lg">{user.email}</h3>
+                        {user.primary_role === 'admin' && (
+                          <Shield className="h-4 w-4 text-purple-600" />
+                        )}
+                      </div>
+                      
+                      {(user.first_name || user.last_name) && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <User className="h-3 w-3" />
+                          <span className="text-sm">
+                            {[user.first_name, user.last_name].filter(Boolean).join(' ')}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {user.business_name && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Building className="h-3 w-3" />
+                          <span className="text-sm">{user.business_name}</span>
+                        </div>
+                      )}
+                      
                       <div className="flex items-center gap-1 text-muted-foreground">
-                        <User className="h-3 w-3" />
+                        <Calendar className="h-3 w-3" />
                         <span className="text-sm">
-                          {[user.first_name, user.last_name].filter(Boolean).join(' ')}
+                          Joined {formatUKDate(user.created_at)}
                         </span>
                       </div>
-                    )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant={user.primary_role === 'admin' ? 'default' : 'secondary'}
+                      className={user.primary_role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : ''}
+                    >
+                      {user.primary_role || 'user'}
+                    </Badge>
                     
-                    {user.business_name && (
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Building className="h-3 w-3" />
-                        <span className="text-sm">{user.business_name}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditUser(user)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteUser(user)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              
+              {user.onboarding_data && (
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    {user.onboarding_data.purpose && (
+                      <div>
+                        <span className="font-medium text-muted-foreground">Purpose:</span>
+                        <p className="mt-1">{user.onboarding_data.purpose}</p>
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      <span className="text-sm">
-                        Joined {formatUKDate(user.created_at)}
-                      </span>
-                    </div>
+                    {user.onboarding_data.role && (
+                      <div>
+                        <span className="font-medium text-muted-foreground">Role:</span>
+                        <p className="mt-1">{user.onboarding_data.role}</p>
+                      </div>
+                    )}
+                    
+                    {user.onboarding_data.company_size && (
+                      <div>
+                        <span className="font-medium text-muted-foreground">Company Size:</span>
+                        <p className="mt-1">{user.onboarding_data.company_size}</p>
+                      </div>
+                    )}
+                    
+                    {user.onboarding_data.industry && (
+                      <div>
+                        <span className="font-medium text-muted-foreground">Industry:</span>
+                        <p className="mt-1">{user.onboarding_data.industry}</p>
+                      </div>
+                    )}
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    variant={user.primary_role === 'admin' ? 'default' : 'secondary'}
-                    className={user.primary_role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : ''}
-                  >
-                    {user.primary_role || 'user'}
-                  </Badge>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEditUser(user)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteUser(user)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            
-            {user.onboarding_data && (
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  {user.onboarding_data.purpose && (
-                    <div>
-                      <span className="font-medium text-muted-foreground">Purpose:</span>
-                      <p className="mt-1">{user.onboarding_data.purpose}</p>
-                    </div>
-                  )}
-                  
-                  {user.onboarding_data.role && (
-                    <div>
-                      <span className="font-medium text-muted-foreground">Role:</span>
-                      <p className="mt-1">{user.onboarding_data.role}</p>
-                    </div>
-                  )}
-                  
-                  {user.onboarding_data.company_size && (
-                    <div>
-                      <span className="font-medium text-muted-foreground">Company Size:</span>
-                      <p className="mt-1">{user.onboarding_data.company_size}</p>
-                    </div>
-                  )}
-                  
-                  {user.onboarding_data.industry && (
-                    <div>
-                      <span className="font-medium text-muted-foreground">Industry:</span>
-                      <p className="mt-1">{user.onboarding_data.industry}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            )}
-          </Card>
-        ))}
-      </div>
+                </CardContent>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
 
       {editingUser && (
         <EditUserDialog
