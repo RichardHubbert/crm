@@ -19,46 +19,11 @@ export const useAdminUsers = () => {
       try {
         console.log('Fetching all users for admin...');
 
-        // First, try the edge function approach
-        try {
-          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-          
-          if (sessionError) {
-            throw new Error('Failed to get authentication session');
-          }
-
-          if (!session?.access_token) {
-            throw new Error('No authentication token available');
-          }
-
-          console.log('Attempting to use edge function...');
-          const response = await fetch(`https://nxiejogrelqxxkyhcwgi.supabase.co/functions/v1/admin-get-users`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success) {
-              console.log('Successfully fetched users from edge function:', result.users?.length);
-              setUsers(result.users || []);
-              setLoading(false);
-              return;
-            }
-          }
-          
-          console.log('Edge function failed, falling back to database approach...');
-        } catch (edgeFunctionError) {
-          console.log('Edge function error, falling back to database approach:', edgeFunctionError);
-        }
-
-        // Fallback: Use the original database approach with better error handling
+        // Temporarily skip edge function attempt due to CORS issues
+        // TODO: Re-enable when edge function is deployed
         console.log('Using database approach...');
 
-        // First, check if the is_admin function exists by trying to call it
+        // Check if the is_admin function exists by trying to call it
         try {
           const { data: authUsers, error: authUsersError } = await supabase
             .rpc('admin_get_all_users');
@@ -67,7 +32,7 @@ export const useAdminUsers = () => {
             console.error('Error fetching auth users:', authUsersError);
             // If the function doesn't exist, we'll handle it gracefully
             if (authUsersError.message.includes('function') || authUsersError.message.includes('does not exist')) {
-              throw new Error('Admin function not available - please contact support');
+              throw new Error('Admin function not available - please run the SQL fix in Supabase dashboard');
             }
             setError('Failed to fetch users from auth system');
             return;
@@ -153,8 +118,8 @@ export const useAdminUsers = () => {
           setUsers(combinedUsers);
 
         } catch (databaseError) {
-          console.error('Database approach also failed:', databaseError);
-          setError(databaseError.message || 'Failed to fetch users from both edge function and database');
+          console.error('Database approach failed:', databaseError);
+          setError(databaseError.message || 'Failed to fetch users from database');
         }
 
       } catch (error) {
