@@ -34,21 +34,23 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
 
   // Get unique values for filters
   const uniqueRoles = useMemo(() => {
-    const roles = users.map(user => user.primary_role).filter(Boolean) as string[];
+    const roles = users
+      .map(user => user.primary_role)
+      .filter(role => role && role.trim() !== '') as string[];
     return [...new Set(roles)];
   }, [users]);
 
   const uniquePurposes = useMemo(() => {
     const purposes = users
       .map(user => user.onboarding_data?.purpose)
-      .filter(Boolean) as string[];
+      .filter(purpose => purpose && purpose.trim() !== '') as string[];
     return [...new Set(purposes)];
   }, [users]);
 
   const uniqueIndustries = useMemo(() => {
     const industries = users
       .map(user => user.onboarding_data?.industry)
-      .filter(Boolean) as string[];
+      .filter(industry => industry && industry.trim() !== '') as string[];
     return [...new Set(industries)];
   }, [users]);
 
