@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UserFormData } from "@/types/userForm";
 
@@ -22,8 +21,8 @@ export const createUser = async (data: UserFormData) => {
 
     console.log('Session obtained, calling edge function...');
     
-    // Call the Edge Function to create the user
-    const response = await fetch(`https://nnxdtpnrwgcknhpyhowr.supabase.co/functions/v1/admin-create-user`, {
+    // Call the Edge Function to create the user using the correct project URL
+    const response = await fetch(`https://nxiejogrelqxxkyhcwgi.supabase.co/functions/v1/admin-create-user`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
@@ -42,70 +41,17 @@ export const createUser = async (data: UserFormData) => {
     console.log('Edge function response status:', response.status);
     console.log('Edge function response headers:', Object.fromEntries(response.headers.entries()));
 
-    // Check if response is ok
-    if (!response.ok) {
-      console.error('Edge function returned non-OK status:', response.status, response.statusText);
-      
-      // Try to get error details from response
-      let errorDetails;
-      try {
-        const responseText = await response.text();
-        console.log('Error response body:', responseText);
-        
-        // Try to parse as JSON
-        try {
-          errorDetails = JSON.parse(responseText);
-        } catch {
-          errorDetails = { error: responseText || `HTTP ${response.status}: ${response.statusText}` };
-        }
-      } catch (textError) {
-        console.error('Failed to read error response:', textError);
-        errorDetails = { error: `HTTP ${response.status}: ${response.statusText}` };
-      }
-      
-      throw new Error(errorDetails.error || `Request failed with status ${response.status}`);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error('Edge function error:', result);
+      throw new Error(result.error || 'Failed to create user');
     }
 
-    // Parse the response
-    let result;
-    try {
-      const responseText = await response.text();
-      console.log('Success response body:', responseText);
-      
-      if (!responseText) {
-        throw new Error('Empty response from server');
-      }
-      
-      result = JSON.parse(responseText);
-      console.log('Parsed result:', result);
-    } catch (parseError) {
-      console.error('Failed to parse response:', parseError);
-      throw new Error('Invalid response format from server');
-    }
-
-    // Validate the result
-    if (!result || typeof result !== 'object') {
-      console.error('Invalid result object:', result);
-      throw new Error('Invalid response from server');
-    }
-
-    if (!result.success) {
-      console.error('Edge function reported failure:', result);
-      throw new Error(result.error || 'User creation failed');
-    }
-
-    console.log('User creation successful:', result);
+    console.log('User creation result:', result);
     return result;
-
   } catch (error) {
     console.error('Error in createUser:', error);
-    
-    // Re-throw with more context if it's a generic error
-    if (error.message === 'Failed to fetch') {
-      throw new Error('Network error: Unable to connect to the server. Please check your internet connection and try again.');
-    }
-    
-    // Re-throw the original error
     throw error;
   }
 };
