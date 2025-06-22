@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Handshake, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Handshake, MoreHorizontal, Edit, Trash2, User } from "lucide-react";
 import EditDealDialog from "./EditDealDialog";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { Deal } from "@/hooks/useDeals";
@@ -111,6 +111,15 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                       <span className="text-sm font-medium">{new Date(deal.close_date).toLocaleDateString('en-GB')}</span>
                     </div>
                   )}
+                  {deal.user && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Created by:</span>
+                      <span className="text-sm font-medium flex items-center">
+                        <User className="mr-1 h-3 w-3" />
+                        {deal.user.email}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -152,6 +161,7 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
               <TableHead>Stage</TableHead>
               <TableHead>Probability</TableHead>
               <TableHead>Close Date</TableHead>
+              <TableHead>Created by</TableHead>
               <TableHead className="w-[70px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -174,6 +184,14 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                 <TableCell>{deal.probability}%</TableCell>
                 <TableCell>
                   {deal.close_date ? new Date(deal.close_date).toLocaleDateString('en-GB') : "-"}
+                </TableCell>
+                <TableCell>
+                  {deal.user && (
+                    <span className="text-sm font-medium flex items-center">
+                      <User className="mr-1 h-3 w-3" />
+                      {deal.user.email}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <ActionsMenu deal={deal} />

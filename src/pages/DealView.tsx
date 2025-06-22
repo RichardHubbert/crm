@@ -4,7 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Calendar, Handshake, Building2, Percent } from "lucide-react";
+import { ArrowLeft, Edit, Calendar, Handshake, Building2, Percent, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserInfo } from "@/components/UserInfo";
 import { Deal } from "@/hooks/useDeals";
@@ -25,7 +25,8 @@ const DealView = () => {
           .from('deals')
           .select(`
             *,
-            customer:customers(name)
+            customer:customers(name),
+            user:auth.users(email)
           `)
           .eq('id', id)
           .maybeSingle();
@@ -169,6 +170,18 @@ const DealView = () => {
               </div>
             </div>
           </div>
+
+          {deal.user && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm font-medium">Created by</div>
+                <div className="text-gray-600">
+                  <User className="mr-2 inline-block h-4 w-4" />
+                  {deal.user.email}
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

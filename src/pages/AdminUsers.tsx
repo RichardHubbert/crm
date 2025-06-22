@@ -1,20 +1,17 @@
+
 import { AdminUsersTable } from "@/components/AdminUsersTable";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useAuthContext } from "@/components/AuthProvider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Shield, AlertTriangle, Loader2, User, Plus } from "lucide-react";
+import { Shield, AlertTriangle, Loader2, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import AddUserDialog from "@/components/AddUserDialog";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 
 const AdminUsers = () => {
   const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { users, loading: usersLoading, error } = useAdminUsers();
   const { user } = useAuthContext();
-  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
 
   // Show loading while checking admin status
   if (adminLoading) {
@@ -68,11 +65,6 @@ const AdminUsers = () => {
                 </p>
               </div>
             </div>
-            
-            <Button onClick={() => setIsAddUserDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add User
-            </Button>
           </div>
           
           <div className="flex items-center gap-3 bg-white px-4 py-3 rounded-lg border border-purple-300">
@@ -120,14 +112,8 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       ) : (
-        <AdminUsersTable users={users} onUsersChange={handleUsersChange} currentUser={user} />
+        <AdminUsersTable users={users} onUsersChange={handleUsersChange} />
       )}
-
-      <AddUserDialog
-        open={isAddUserDialogOpen}
-        onOpenChange={setIsAddUserDialogOpen}
-        onUserAdded={handleUsersChange}
-      />
     </div>
   );
 };
