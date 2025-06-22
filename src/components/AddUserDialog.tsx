@@ -36,17 +36,30 @@ const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) 
   });
 
   const onSubmit = async (data: UserFormData) => {
+    console.log('Form submitted with data:', { ...data, password: '[REDACTED]' });
     setIsLoading(true);
+    
     try {
-      await createUser(data);
+      console.log('Calling createUser service...');
+      const result = await createUser(data);
+      console.log('CreateUser service returned:', result);
       
       toast.success("User created successfully!");
       onUserAdded();
       onOpenChange(false);
       form.reset();
+      
     } catch (error) {
-      console.error('Error creating user:', error);
-      toast.error(error instanceof Error ? error.message : "Failed to create user");
+      console.error('Error in form submission:', error);
+      
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An unexpected error occurred while creating the user";
+      
+      console.error('Showing error toast:', errorMessage);
+      toast.error(errorMessage);
+      
     } finally {
       setIsLoading(false);
     }
