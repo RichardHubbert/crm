@@ -91,6 +91,14 @@ export const useAdminUsers = () => {
             // Find user roles
             const roles = userRoles?.filter(ur => ur.user_id === authUser.id).map(ur => ur.role) || [];
             
+            // Determine primary role
+            let primaryRole = profile?.primary_role || null;
+            if (roles.includes('admin')) {
+              primaryRole = 'admin';
+            } else if (roles.length > 0) {
+              primaryRole = roles[0];
+            }
+
             // Find onboarding data
             const onboarding = onboardingData?.find(od => od.user_id === authUser.id);
 
@@ -101,7 +109,7 @@ export const useAdminUsers = () => {
               last_name: profile?.last_name || null,
               business_name: profile?.business_name || null,
               created_at: authUser.created_at,
-              primary_role: profile?.primary_role || null,
+              primary_role: primaryRole,
               roles,
               onboarding_data: onboarding ? {
                 purpose: onboarding.purpose,
