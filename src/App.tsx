@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { AuthProvider } from "./components/AuthProvider";
 import { SignOutHelper } from "./components/SignOutHelper";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
@@ -33,22 +34,24 @@ const queryClient = new QueryClient({
 
 const ProtectedLayout = () => {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <SidebarInset>
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/deals" element={<Deals />} />
-            <Route path="/deals/:id" element={<DealView />} />
-            <Route path="/contacts" element={<Contacts />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <ErrorBoundary>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <SidebarInset>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/deals" element={<Deals />} />
+              <Route path="/deals/:id" element={<DealView />} />
+              <Route path="/contacts" element={<Contacts />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </ErrorBoundary>
   );
 };
 
@@ -170,15 +173,17 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </AuthProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
