@@ -61,7 +61,7 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
       console.log('Making request to delete user via edge function...');
       
       // Call the Edge Function to delete the user with simplified error handling
-      const response = await fetch(`https://nxiejogrelqxxkyhcwgi.supabase.co/functions/v1/admin-delete-user-complete`, {
+      const response = await fetch(`https://nnxdtpnrwgcknhpyhowr.supabase.co/functions/v1/admin-delete-user-complete`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,

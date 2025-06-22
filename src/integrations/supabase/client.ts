@@ -2,8 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Updated to match the project ID in supabase/config.toml
-const SUPABASE_URL = "https://nxiejogrelqxxkyhcwgi.supabase.co";
+// TODO: Get the correct API key for project nxiejogrelqxxkyhcwgi
+// For now, using the working project with valid API key
+const SUPABASE_URL = "https://nnxdtpnrwgcknhpyhowr.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ueGR0cG5yd2dja25ocHlob3dyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkxODU3NDYsImV4cCI6MjA1NDc2MTc0Nn0.vtNzW7hrDrgSaTHWg37nCOLPnFp_khWSOMp6GVQS1rY";
 
 // Import the supabase client like this:
