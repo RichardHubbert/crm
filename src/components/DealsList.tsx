@@ -111,12 +111,12 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                       <span className="text-sm font-medium">{new Date(deal.close_date).toLocaleDateString('en-GB')}</span>
                     </div>
                   )}
-                  {deal.user && (
+                  {deal.user_id && (
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">Created by:</span>
                       <span className="text-sm font-medium flex items-center">
                         <User className="mr-1 h-3 w-3" />
-                        {deal.user.email}
+                        {deal.user_id.substring(0, 8)}...
                       </span>
                     </div>
                   )}
@@ -186,10 +186,10 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                   {deal.close_date ? new Date(deal.close_date).toLocaleDateString('en-GB') : "-"}
                 </TableCell>
                 <TableCell>
-                  {deal.user && (
+                  {deal.user_id && (
                     <span className="text-sm font-medium flex items-center">
                       <User className="mr-1 h-3 w-3" />
-                      {deal.user.email}
+                      {deal.user_id.substring(0, 8)}...
                     </span>
                   )}
                 </TableCell>

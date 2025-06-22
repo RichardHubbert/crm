@@ -15,9 +15,7 @@ export interface Deal {
   customer?: {
     name: string;
   };
-  user?: {
-    email: string;
-  };
+  user_email?: string;
 }
 
 export const useDeals = () => {
@@ -32,8 +30,7 @@ export const useDeals = () => {
         .from('deals')
         .select(`
           *,
-          customer:customers(name),
-          user:auth.users(email)
+          customer:customers(name)
         `)
         .order('created_at', { ascending: false });
 
@@ -57,8 +54,7 @@ export const useDeals = () => {
         .insert([{ ...dealData, user_id: user.id }])
         .select(`
           *,
-          customer:customers(name),
-          user:auth.users(email)
+          customer:customers(name)
         `)
         .maybeSingle();
 
@@ -81,8 +77,7 @@ export const useDeals = () => {
         .eq('id', id)
         .select(`
           *,
-          customer:customers(name),
-          user:auth.users(email)
+          customer:customers(name)
         `)
         .maybeSingle();
 

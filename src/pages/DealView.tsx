@@ -25,8 +25,7 @@ const DealView = () => {
           .from('deals')
           .select(`
             *,
-            customer:customers(name),
-            user:auth.users(email)
+            customer:customers(name)
           `)
           .eq('id', id)
           .maybeSingle();
@@ -171,13 +170,13 @@ const DealView = () => {
             </div>
           </div>
 
-          {deal.user && (
+          {deal.user_id && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="text-sm font-medium">Created by</div>
                 <div className="text-gray-600">
                   <User className="mr-2 inline-block h-4 w-4" />
-                  {deal.user.email}
+                  {deal.user_id.substring(0, 8)}...
                 </div>
               </div>
             </div>
