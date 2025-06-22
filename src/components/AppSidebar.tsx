@@ -1,5 +1,4 @@
-
-import { Building2, Users, Handshake, Phone, BarChart3, Shield } from "lucide-react";
+import { Building2, Users, Handshake, Phone, BarChart3, Shield, Contact, LayoutDashboard, Settings, Users2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -34,6 +33,11 @@ const menuItems = [
     title: "Contacts",
     url: "/contacts",
     icon: Users,
+  },
+  {
+    title: "Teams",
+    url: "/teams",
+    icon: Users2,
   },
 ];
 

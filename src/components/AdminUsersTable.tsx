@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit, User, Building, Calendar, Shield, Search, X, Crown } from "lucide-react";
+import { Trash2, Edit, User, Building, Calendar, Shield, Search, X, Crown, Users, Loader2 } from "lucide-react";
 import { AdminUser } from "@/types/adminUser";
 import { formatUKDate } from "@/lib/utils";
 import EditUserDialog from "./EditUserDialog";
@@ -14,6 +14,8 @@ import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User as AuthUser } from "@supabase/supabase-js";
+import { teamService, Team } from "@/services/teamService";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface AdminUsersTableProps {
   users: AdminUser[];
@@ -21,12 +23,74 @@ interface AdminUsersTableProps {
   currentUser: AuthUser | null;
 }
 
+const AddToTeamDialog = ({ user, teams, onUserAddedToTeam }: { user: AdminUser, teams: Team[], onUserAddedToTeam: () => void }) => {
+  const [open, setOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleAddToTeam = async () => {
+    if (!selectedTeam) {
+      toast.error("Please select a team.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await teamService.addMemberToTeam(selectedTeam, user.id);
+      toast.success(`User ${user.email} added to team.`);
+      onUserAddedToTeam();
+      setOpen(false);
+    } catch (error) {
+      toast.error("Failed to add user to team.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Users className="mr-2 h-4 w-4" />
+          Add to Team
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add {user.email} to a Team</DialogTitle>
+        </DialogHeader>
+        <Select onValueChange={setSelectedTeam}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a team" />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map(team => (
+              <SelectItem key={team.id} value={team.id}>
+                {team.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+            Cancel
+          </Button>
+          <Button onClick={handleAddToTeam} disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Add to Team
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export const AdminUsersTable = ({ users, onUsersChange, currentUser }: AdminUsersTableProps) => {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
   
   // Search state
   const [searchTerm, setSearchTerm] = useState("");
@@ -242,6 +306,18 @@ export const AdminUsersTable = ({ users, onUsersChange, currentUser }: AdminUser
     setEditingUser(null);
     onUsersChange();
   }, [onUsersChange]);
+
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const userTeams = await teamService.getTeamsForCurrentUser();
+        setTeams(userTeams);
+      } catch (error) {
+        // silently fail
+      }
+    };
+    fetchTeams();
+  }, []);
 
   if (users.length === 0) {
     return (
@@ -484,6 +560,10 @@ export const AdminUsersTable = ({ users, onUsersChange, currentUser }: AdminUser
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
+
+                      <AddToTeamDialog user={user} teams={teams} onUserAddedToTeam={() => {
+                        // maybe refresh teams here later
+                      }} />
                     </div>
                   </div>
                 </CardHeader>
