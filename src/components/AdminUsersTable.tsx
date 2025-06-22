@@ -6,13 +6,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit, User, Building, Calendar, Shield, Search, X } from "lucide-react";
+import { Trash2, Edit, User, Building, Calendar, Shield, Search, X, Crown } from "lucide-react";
 import { AdminUser } from "@/types/adminUser";
 import { formatUKDate } from "@/lib/utils";
 import EditUserDialog from "./EditUserDialog";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuthContext } from "@/components/AuthProvider";
 
 interface AdminUsersTableProps {
   users: AdminUser[];
@@ -25,6 +26,7 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { user: currentUser } = useAuthContext();
   
   // Search state
   const [searchTerm, setSearchTerm] = useState("");
@@ -241,6 +243,11 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
     onUsersChange();
   }, [onUsersChange]);
 
+  // Check if a user is the current user
+  const isCurrentUser = (user: AdminUser) => {
+    return currentUser && user.id === currentUser.id;
+  };
+
   if (users.length === 0) {
     return (
       <Card>
@@ -388,7 +395,14 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
       ) : (
         <div className="grid gap-4">
           {filteredUsers.map((user) => (
-            <Card key={user.id} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={user.id} 
+              className={`hover:shadow-md transition-shadow ${
+                isCurrentUser(user) 
+                  ? 'border-2 border-yellow-300 bg-yellow-50/30' 
+                  : ''
+              }`}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -402,7 +416,13 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-lg">{user.email}</h3>
-                        {user.primary_role === 'admin' && (
+                        {isCurrentUser(user) && (
+                          <div className="flex items-center gap-1">
+                            <Crown className="h-4 w-4 text-yellow-500" />
+                            <span className="text-sm font-medium text-yellow-600">You (Admin)</span>
+                          </div>
+                        )}
+                        {user.primary_role === 'admin' && !isCurrentUser(user) && (
                           <Shield className="h-4 w-4 text-purple-600" />
                         )}
                       </div>
@@ -435,9 +455,15 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
                   <div className="flex items-center gap-2">
                     <Badge 
                       variant={user.primary_role === 'admin' ? 'default' : 'secondary'}
-                      className={user.primary_role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' : ''}
+                      className={
+                        isCurrentUser(user) 
+                          ? 'bg-yellow-100 text-yellow-800 border-yellow-200' 
+                          : user.primary_role === 'admin' 
+                            ? 'bg-purple-100 text-purple-800 border-purple-200' 
+                            : ''
+                      }
                     >
-                      {user.primary_role || 'user'}
+                      {isCurrentUser(user) ? 'You (Admin)' : (user.primary_role || 'user')}
                     </Badge>
                     
                     <Button
