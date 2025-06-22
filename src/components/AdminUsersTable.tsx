@@ -36,22 +36,22 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
   const uniqueRoles = useMemo(() => {
     const roles = users
       .map(user => user.primary_role)
-      .filter(role => role && role.trim() !== '') as string[];
-    return [...new Set(roles)];
+      .filter(role => role && typeof role === 'string' && role.trim() !== '') as string[];
+    return [...new Set(roles)].sort();
   }, [users]);
 
   const uniquePurposes = useMemo(() => {
     const purposes = users
       .map(user => user.onboarding_data?.purpose)
-      .filter(purpose => purpose && purpose.trim() !== '') as string[];
-    return [...new Set(purposes)];
+      .filter(purpose => purpose && typeof purpose === 'string' && purpose.trim() !== '') as string[];
+    return [...new Set(purposes)].sort();
   }, [users]);
 
   const uniqueIndustries = useMemo(() => {
     const industries = users
       .map(user => user.onboarding_data?.industry)
-      .filter(industry => industry && industry.trim() !== '') as string[];
-    return [...new Set(industries)];
+      .filter(industry => industry && typeof industry === 'string' && industry.trim() !== '') as string[];
+    return [...new Set(industries)].sort();
   }, [users]);
 
   // Filter users based on search criteria

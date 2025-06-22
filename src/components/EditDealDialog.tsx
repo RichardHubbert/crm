@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +18,7 @@ interface EditDealDialogProps {
 const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDialogProps) => {
   const [formData, setFormData] = useState({
     title: deal.title,
-    customer_id: deal.customer_id || '',
+    customer_id: deal.customer_id || 'none',
     value: deal.value.toString(),
     stage: deal.stage,
     probability: deal.probability.toString(),
@@ -37,7 +36,7 @@ const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDia
     try {
       await onDealUpdated(deal.id, {
         title: formData.title,
-        customer_id: formData.customer_id || null,
+        customer_id: formData.customer_id === 'none' ? null : formData.customer_id,
         value: parseFloat(formData.value) || 0,
         stage: formData.stage,
         probability: parseInt(formData.probability) || 0,
@@ -90,7 +89,7 @@ const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDia
                 <SelectValue placeholder="Select a customer" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No customer</SelectItem>
+                <SelectItem value="none">No customer</SelectItem>
                 {customers.map((customer) => (
                   <SelectItem key={customer.id} value={customer.id}>
                     {customer.name}
