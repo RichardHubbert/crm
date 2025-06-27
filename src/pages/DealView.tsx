@@ -4,7 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Calendar, Handshake, Building2, Percent, User } from "lucide-react";
+import { ArrowLeft, Edit, Calendar, Handshake, Building2, Percent, User, Repeat, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserInfo } from "@/components/UserInfo";
 import { Deal } from "@/hooks/useDeals";
@@ -66,6 +66,20 @@ const DealView = () => {
       default:
         return "bg-gray-100 text-gray-700";
     }
+  };
+
+  const getDealTypeDisplay = (dealType: string) => {
+    switch (dealType) {
+      case "recurring":
+        return { label: "Recurring", icon: Repeat, color: "text-blue-600" };
+      case "one_off":
+      default:
+        return { label: "One-off", icon: Zap, color: "text-orange-600" };
+    }
+  };
+
+  const getAnnualValue = (value: number, dealType: string) => {
+    return dealType === 'recurring' ? value * 12 : value;
   };
 
   if (loading) {
@@ -151,6 +165,40 @@ const DealView = () => {
                 {formatGBP(deal.value)}
               </div>
             </div>
+            <div>
+              <div className="text-sm font-medium">Annual Value</div>
+              <div className="text-gray-600">
+                <Handshake className="mr-2 inline-block h-4 w-4" />
+                {formatGBP(getAnnualValue(deal.value, deal.deal_type))}
+                {deal.deal_type === 'recurring' && (
+                  <span className="text-xs text-muted-foreground ml-1">({formatGBP(deal.value)}/month × 12)</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="text-sm font-medium">Deal Type</div>
+              <div className="text-gray-600">
+                {(() => {
+                  const { label, icon: Icon, color } = getDealTypeDisplay(deal.deal_type);
+                  return (
+                    <>
+                      <Icon className={`mr-2 inline-block h-4 w-4 ${color}`} />
+                      {label}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm font-medium">Probability</div>
+              <div className="text-gray-600">
+                <Percent className="mr-2 inline-block h-4 w-4" />
+                {deal.probability}%
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,13 +207,6 @@ const DealView = () => {
               <div className="text-gray-600">
                 <Calendar className="mr-2 inline-block h-4 w-4" />
                 {deal.close_date ? new Date(deal.close_date).toLocaleDateString() : "N/A"}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm font-medium">Probability</div>
-              <div className="text-gray-600">
-                <Percent className="mr-2 inline-block h-4 w-4" />
-                {deal.probability}%
               </div>
             </div>
           </div>
@@ -181,6 +222,18 @@ const DealView = () => {
               </div>
             </div>
           )}
+
+          {/* Notes Section */}
+          <div className="mt-4">
+            <div className="text-sm font-medium mb-2">Notes</div>
+            <div className="bg-gray-50 p-4 rounded-md">
+              {deal.notes ? (
+                <p className="text-gray-700 whitespace-pre-wrap">{deal.notes}</p>
+              ) : (
+                <p className="text-gray-400 italic">No notes available for this deal.</p>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -22,6 +22,7 @@ const AddDealDialog = ({ onDealAdded }: AddDealDialogProps) => {
     stage: 'Prospecting',
     probability: '',
     close_date: '',
+    deal_type: 'one_off' as 'one_off' | 'recurring',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -41,6 +42,7 @@ const AddDealDialog = ({ onDealAdded }: AddDealDialogProps) => {
         stage: formData.stage,
         probability: parseInt(formData.probability) || 0,
         close_date: formData.close_date || null,
+        deal_type: formData.deal_type,
       });
 
       toast({
@@ -55,6 +57,7 @@ const AddDealDialog = ({ onDealAdded }: AddDealDialogProps) => {
         stage: 'Prospecting',
         probability: '',
         close_date: '',
+        deal_type: 'one_off',
       });
       setOpen(false);
       onDealAdded?.();
@@ -124,6 +127,19 @@ const AddDealDialog = ({ onDealAdded }: AddDealDialogProps) => {
               min="0"
               step="0.01"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="deal_type">Deal Type</Label>
+            <Select value={formData.deal_type} onValueChange={(value: 'one_off' | 'recurring') => handleInputChange('deal_type', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="one_off">One-off Payment</SelectItem>
+                <SelectItem value="recurring">Recurring (Monthly/Annual)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

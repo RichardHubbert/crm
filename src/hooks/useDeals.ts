@@ -9,6 +9,8 @@ export interface Deal {
   stage: string;
   probability: number;
   close_date: string | null;
+  deal_type: 'one_off' | 'recurring';
+  notes?: string;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -71,6 +73,8 @@ export const useDeals = () => {
 
   const updateDeal = async (id: string, dealData: Partial<Omit<Deal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'customer'>>) => {
     try {
+      console.log('Updating deal with data:', dealData);
+      
       const { data, error } = await supabase
         .from('deals')
         .update(dealData)
@@ -81,13 +85,20 @@ export const useDeals = () => {
         `)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(`Failed to update deal: ${error.message}`);
+      }
       
-      if (!data) throw new Error('Failed to update deal');
+      if (!data) {
+        console.error('No data returned from update');
+        throw new Error('Failed to update deal: No data returned');
+      }
       
       setDeals(prev => prev.map(deal => deal.id === id ? data : deal));
       return data;
     } catch (err) {
+      console.error('Update error:', err);
       throw err instanceof Error ? err : new Error('Failed to update deal');
     }
   };

@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Handshake, MoreHorizontal, Edit, Trash2, User } from "lucide-react";
+import { Handshake, MoreHorizontal, Edit, Trash2, User, Repeat, Zap } from "lucide-react";
 import EditDealDialog from "./EditDealDialog";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { Deal } from "@/hooks/useDeals";
@@ -19,6 +19,7 @@ interface DealsListProps {
 }
 
 const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps) => {
+  const navigate = useNavigate();
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [deletingDeal, setDeletingDeal] = useState<Deal | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -33,6 +34,20 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
       case "Closed Lost": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const getDealTypeDisplay = (dealType: string) => {
+    switch (dealType) {
+      case "recurring":
+        return { label: "Recurring", icon: Repeat, color: "text-blue-600" };
+      case "one_off":
+      default:
+        return { label: "One-off", icon: Zap, color: "text-orange-600" };
+    }
+  };
+
+  const getAnnualValue = (value: number, dealType: string) => {
+    return dealType === 'recurring' ? value * 12 : value;
   };
 
   const handleDelete = async () => {
@@ -77,14 +92,21 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
       <>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {deals.map((deal) => (
-            <Card key={deal.id} className="hover:shadow-lg transition-shadow">
+            <Card key={deal.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/deals/${deal.id}`)}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <Link to={`/deals/${deal.id}`} className="flex items-center flex-1">
-                    <CardTitle className="text-lg flex items-center cursor-pointer hover:underline">
-                      <Handshake className="mr-2 h-5 w-5" />
-                      {deal.title}
-                    </CardTitle>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg flex items-center cursor-pointer hover:underline">
+                        <Handshake className="mr-2 h-5 w-5" />
+                        {deal.title}
+                      </CardTitle>
+                      {deal.notes && (
+                        <CardDescription className="mt-2 line-clamp-2">
+                          {deal.notes}
+                        </CardDescription>
+                      )}
+                    </div>
                   </Link>
                   <div className="flex items-center space-x-2">
                     <Badge className={getStageColor(deal.stage)}>
@@ -100,6 +122,24 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Value:</span>
                     <span className="text-sm font-medium">{formatGBP(deal.value)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Annual Value:</span>
+                    <span className="text-sm font-medium">{formatGBP(getAnnualValue(deal.value, deal.deal_type))}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Type:</span>
+                    <span className="text-sm font-medium flex items-center">
+                      {(() => {
+                        const { label, icon: Icon, color } = getDealTypeDisplay(deal.deal_type);
+                        return (
+                          <>
+                            <Icon className={`mr-1 h-3 w-3 ${color}`} />
+                            {label}
+                          </>
+                        );
+                      })()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Probability:</span>
@@ -158,6 +198,8 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
               <TableHead>Title</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Value</TableHead>
+              <TableHead>Annual Value</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Stage</TableHead>
               <TableHead>Probability</TableHead>
               <TableHead>Close Date</TableHead>
@@ -176,6 +218,20 @@ const DealsList = ({ deals, view, onDealUpdated, onDealDeleted }: DealsListProps
                 </TableCell>
                 <TableCell>{deal.customer?.name || "-"}</TableCell>
                 <TableCell>{formatGBP(deal.value)}</TableCell>
+                <TableCell>{formatGBP(getAnnualValue(deal.value, deal.deal_type))}</TableCell>
+                <TableCell>
+                  <span className="text-sm font-medium flex items-center">
+                    {(() => {
+                      const { label, icon: Icon, color } = getDealTypeDisplay(deal.deal_type);
+                      return (
+                        <>
+                          <Icon className={`mr-1 h-3 w-3 ${color}`} />
+                          {label}
+                        </>
+                      );
+                    })()}
+                  </span>
+                </TableCell>
                 <TableCell>
                   <Badge className={getStageColor(deal.stage)}>
                     {deal.stage}

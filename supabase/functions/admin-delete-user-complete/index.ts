@@ -1,5 +1,8 @@
+// Supabase Edge Function - runs in Deno runtime
+// TypeScript errors for Deno imports are expected in Node.js environments
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

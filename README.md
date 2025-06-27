@@ -71,3 +71,11 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Development Notes
+
+### TypeScript Errors in Edge Functions
+The files in `supabase/functions/` are Supabase Edge Functions that run in the Deno runtime, not Node.js. TypeScript errors for Deno imports (like `https://deno.land/std@...`) are expected and normal in Node.js development environments. These functions will work correctly when deployed to Supabase, despite the IDE warnings.
+
+### Edge Function Files:
+- `supabase/functions/admin-delete-user-complete/index.ts` - Admin user deletion function

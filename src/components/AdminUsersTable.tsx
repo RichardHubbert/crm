@@ -6,14 +6,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit, User, Building, Calendar, Shield, Search, X, Crown } from "lucide-react";
+import { Trash2, Edit, User, Building, Calendar, Shield, Search, X, Crown, UserCog, AlertTriangle, Info, KeyRound } from "lucide-react";
 import { AdminUser } from "@/types/adminUser";
 import { formatUKDate } from "@/lib/utils";
 import EditUserDialog from "./EditUserDialog";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import UserPermissionsDialog from "./UserPermissionsDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuthContext } from "@/components/AuthProvider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdminUsersTableProps {
   users: AdminUser[];
@@ -24,7 +26,9 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+  const [userForPermissions, setUserForPermissions] = useState<AdminUser | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { user: currentUser } = useAuthContext();
   
@@ -101,6 +105,12 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
     console.log('Opening delete dialog for user:', user.id);
     setUserToDelete(user);
     setShowDeleteDialog(true);
+  }, []);
+  
+  const handleManagePermissions = useCallback((user: AdminUser) => {
+    console.log('Opening permissions dialog for user:', user.id);
+    setUserForPermissions(user);
+    setShowPermissionsDialog(true);
   }, []);
 
   const confirmDelete = useCallback(async () => {
@@ -466,22 +476,65 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
                       {isCurrentUser(user) ? 'You (Admin)' : (user.primary_role || 'user')}
                     </Badge>
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditUser(user)}
+                            className="hover:bg-blue-50"
+                          >
+                            <UserCog className="h-4 w-4 text-blue-600" />
+                            <span className="ml-1 hidden md:inline">Edit</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit user details and role</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteUser(user)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleManagePermissions(user)}
+                            className="hover:bg-purple-50"
+                          >
+                            <KeyRound className="h-4 w-4 text-purple-600" />
+                            <span className="ml-1 hidden md:inline">Permissions</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Manage user permissions</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            disabled={isCurrentUser(user)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="ml-1 hidden md:inline">Delete</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {isCurrentUser(user) 
+                            ? "Cannot delete your own account" 
+                            : "Delete user account"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               </CardHeader>
@@ -533,12 +586,45 @@ export const AdminUsersTable = ({ users, onUsersChange }: AdminUsersTableProps) 
         />
       )}
 
+      {userForPermissions && (
+        <UserPermissionsDialog
+          open={showPermissionsDialog}
+          onOpenChange={setShowPermissionsDialog}
+          user={userForPermissions}
+          onPermissionsUpdated={handleUserUpdated}
+        />
+      )}
+
       <DeleteConfirmationDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
         onConfirm={confirmDelete}
         title="Delete User Account"
-        description={`Are you sure you want to permanently delete ${userToDelete?.email}? This will remove all their data and cannot be undone.`}
+        description={
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
+              <div>
+                <p className="font-medium">This action cannot be undone</p>
+                <p>Are you sure you want to permanently delete the user account for:</p>
+                <p className="font-bold mt-2">{userToDelete?.email}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3 bg-amber-50 p-3 rounded-md border border-amber-200">
+              <Info className="h-5 w-5 text-amber-600 mt-0.5" />
+              <div className="text-sm text-amber-800">
+                <p className="font-medium">This will permanently remove:</p>
+                <ul className="list-disc ml-5 mt-1 space-y-1">
+                  <li>User authentication credentials</li>
+                  <li>Profile information</li>
+                  <li>Role assignments</li>
+                  <li>All associated user data</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        }
         isLoading={isDeleting}
       />
     </>

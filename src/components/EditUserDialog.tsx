@@ -16,6 +16,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -28,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Shield, User, Building } from "lucide-react";
 
 interface EditUserDialogProps {
   open: boolean;
@@ -45,6 +47,38 @@ interface EditUserDialogProps {
 }
 
 type UserRole = "admin" | "business" | "user";
+
+interface RoleOption {
+  value: UserRole;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+  color: string;
+}
+
+const roleOptions: RoleOption[] = [
+  {
+    value: "user",
+    label: "Standard User",
+    description: "Basic access to the platform",
+    icon: User,
+    color: "text-blue-600",
+  },
+  {
+    value: "business",
+    label: "Business User",
+    description: "Access to business features and analytics",
+    icon: Building,
+    color: "text-green-600",
+  },
+  {
+    value: "admin",
+    label: "Administrator",
+    description: "Full access to all features and user management",
+    icon: Shield,
+    color: "text-purple-600",
+  },
+];
 
 interface FormData {
   first_name: string;
@@ -162,7 +196,10 @@ const EditUserDialog = ({ open, onOpenChange, user, onUserUpdated }: EditUserDia
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>User Role</FormLabel>
+                  <FormDescription>
+                    Select the appropriate role for this user to control their access level
+                  </FormDescription>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -170,9 +207,17 @@ const EditUserDialog = ({ open, onOpenChange, user, onUserUpdated }: EditUserDia
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      {roleOptions.map((role) => (
+                        <SelectItem key={role.value} value={role.value}>
+                          <div className="flex items-center gap-2">
+                            <role.icon className={`h-4 w-4 ${role.color}`} />
+                            <div>
+                              <p>{role.label}</p>
+                              <p className="text-xs text-muted-foreground">{role.description}</p>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -9,14 +9,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ReactNode } from "react";
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   title: string;
-  description: string;
+  description: ReactNode;
   isLoading?: boolean;
+  confirmText?: string;
+  cancelText?: string;
 }
 
 const DeleteConfirmationDialog = ({
@@ -26,6 +29,8 @@ const DeleteConfirmationDialog = ({
   title,
   description,
   isLoading = false,
+  confirmText = "Delete",
+  cancelText = "Cancel",
 }: DeleteConfirmationDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -35,13 +40,13 @@ const DeleteConfirmationDialog = ({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700 text-white focus:ring-red-500"
           >
-            {isLoading ? "Deleting..." : "Delete"}
+            {isLoading ? `${confirmText}...` : confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

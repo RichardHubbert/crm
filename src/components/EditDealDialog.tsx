@@ -23,6 +23,8 @@ const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDia
     stage: deal.stage,
     probability: deal.probability.toString(),
     close_date: deal.close_date || '',
+    deal_type: deal.deal_type || 'one_off' as 'one_off' | 'recurring',
+    notes: deal.notes || '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -41,6 +43,8 @@ const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDia
         stage: formData.stage,
         probability: parseInt(formData.probability) || 0,
         close_date: formData.close_date || null,
+        deal_type: formData.deal_type,
+        notes: formData.notes || null,
       });
 
       toast({
@@ -113,6 +117,19 @@ const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDia
           </div>
 
           <div>
+            <Label htmlFor="deal_type">Deal Type</Label>
+            <Select value={formData.deal_type} onValueChange={(value: 'one_off' | 'recurring') => handleInputChange('deal_type', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="one_off">One-off Payment</SelectItem>
+                <SelectItem value="recurring">Recurring (Monthly/Annual)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <Label htmlFor="stage">Stage</Label>
             <Select value={formData.stage} onValueChange={(value) => handleInputChange('stage', value)}>
               <SelectTrigger>
@@ -149,6 +166,17 @@ const EditDealDialog = ({ deal, open, onOpenChange, onDealUpdated }: EditDealDia
               type="date"
               value={formData.close_date}
               onChange={(e) => handleInputChange('close_date', e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="notes">Notes</Label>
+            <textarea
+              id="notes"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              placeholder="Add any notes about this deal..."
             />
           </div>
 
