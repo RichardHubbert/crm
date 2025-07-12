@@ -1,0 +1,288 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// Interface for incoming customer data
+interface IncomingCustomerData {
+  id?: string
+  name: string
+  industry?: string
+  status?: string
+  revenue?: number
+  email?: string
+  phone?: string
+  address?: string
+  website?: string
+  notes?: string
+  source_database_id?: string
+  source_customer_id?: string
+  created_at?: string
+  updated_at?: string
+}
+
+// Interface for the response
+interface CustomerResponse {
+  success: boolean
+  customer_id?: string
+  message: string
+  error?: string
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    // Verify the request method
+    if (req.method !== 'POST') {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Method not allowed. Use POST.' 
+        } as CustomerResponse),
+        { 
+          status: 405, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Authorization header required' 
+        } as CustomerResponse),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Create Supabase client with service role key for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    // Verify the user making the request
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid authentication' 
+        } as CustomerResponse),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Check if user is admin or has permission to import data
+    const { data: userRoles, error: rolesError } = await supabaseAdmin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .in('role', ['admin', 'data_importer'])
+
+    if (rolesError) {
+      console.error('Error checking user roles:', rolesError)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Failed to verify user permissions' 
+        } as CustomerResponse),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    if (!userRoles || userRoles.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Insufficient permissions to import customer data' 
+        } as CustomerResponse),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Parse the request body
+    const body = await req.json()
+    
+    // Validate the incoming data
+    if (!body.customer_data || !Array.isArray(body.customer_data)) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request body. Expected customer_data array.' 
+        } as CustomerResponse),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    const customerDataArray: IncomingCustomerData[] = body.customer_data
+    const results: CustomerResponse[] = []
+
+    // Process each customer
+    for (const customerData of customerDataArray) {
+      try {
+        // Validate required fields
+        if (!customerData.name || customerData.name.trim() === '') {
+          results.push({
+            success: false,
+            message: 'Customer name is required',
+            error: 'Missing required field: name'
+          })
+          continue
+        }
+
+        // Check if customer already exists (by source_customer_id if provided)
+        let existingCustomer = null
+        if (customerData.source_customer_id) {
+          const { data: existing } = await supabaseAdmin
+            .from('customers')
+            .select('id')
+            .eq('source_customer_id', customerData.source_customer_id)
+            .maybeSingle()
+          
+          existingCustomer = existing
+        }
+
+        // Prepare customer data for insertion/update
+        const customerPayload = {
+          name: customerData.name.trim(),
+          industry: customerData.industry || null,
+          status: customerData.status || 'Active',
+          revenue: customerData.revenue || 0,
+          user_id: user.id, // Assign to the importing user
+          source_database_id: customerData.source_database_id || null,
+          source_customer_id: customerData.source_customer_id || null,
+          notes: customerData.notes || null,
+          updated_at: new Date().toISOString()
+        }
+
+        let result: CustomerResponse
+
+        if (existingCustomer) {
+          // Update existing customer
+          const { data, error } = await supabaseAdmin
+            .from('customers')
+            .update(customerPayload)
+            .eq('id', existingCustomer.id)
+            .select('id')
+            .single()
+
+          if (error) {
+            console.error('Error updating customer:', error)
+            result = {
+              success: false,
+              message: `Failed to update customer: ${customerData.name}`,
+              error: error.message
+            }
+          } else {
+            result = {
+              success: true,
+              customer_id: data.id,
+              message: `Customer updated successfully: ${customerData.name}`
+            }
+          }
+        } else {
+          // Insert new customer
+          const { data, error } = await supabaseAdmin
+            .from('customers')
+            .insert([customerPayload])
+            .select('id')
+            .single()
+
+          if (error) {
+            console.error('Error inserting customer:', error)
+            result = {
+              success: false,
+              message: `Failed to create customer: ${customerData.name}`,
+              error: error.message
+            }
+          } else {
+            result = {
+              success: true,
+              customer_id: data.id,
+              message: `Customer created successfully: ${customerData.name}`
+            }
+          }
+        }
+
+        results.push(result)
+
+      } catch (error) {
+        console.error('Error processing customer:', error)
+        results.push({
+          success: false,
+          message: `Error processing customer: ${customerData.name || 'Unknown'}`,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+      }
+    }
+
+    // Calculate summary
+    const successful = results.filter(r => r.success).length
+    const failed = results.filter(r => !r.success).length
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: `Processed ${customerDataArray.length} customers. ${successful} successful, ${failed} failed.`,
+        results: results,
+        summary: {
+          total: customerDataArray.length,
+          successful: successful,
+          failed: failed
+        }
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+
+  } catch (error) {
+    console.error('Function error:', error)
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      } as CustomerResponse),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+  }
+}) 

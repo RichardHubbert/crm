@@ -103,7 +103,7 @@ const EditUserDialog = ({ open, onOpenChange, user, onUserUpdated }: EditUserDia
     setIsLoading(true);
     try {
       // Update profile information
-      const { error: profileError } = await supabase.rpc('admin_update_user_profile', {
+      const { data: profileResult, error: profileError } = await supabase.rpc('admin_update_user_profile', {
         target_user_id: user.id,
         new_first_name: data.first_name || null,
         new_last_name: data.last_name || null,
@@ -112,6 +112,11 @@ const EditUserDialog = ({ open, onOpenChange, user, onUserUpdated }: EditUserDia
 
       if (profileError) {
         throw profileError;
+      }
+
+      // Check if the function returned an error
+      if (profileResult && typeof profileResult === 'object' && !profileResult.success) {
+        throw new Error(profileResult.error || 'Failed to update profile');
       }
 
       // Update user role if it changed

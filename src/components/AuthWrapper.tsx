@@ -11,6 +11,9 @@ const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading, signIn, signUp } = useAuthContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -29,11 +32,40 @@ const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (!user) {
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
+      
+      // Validate required fields for sign up
+      if (isSignUp) {
+        if (!firstName.trim()) {
+          toast({
+            title: "First Name Required",
+            description: "Please enter your first name to continue.",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!lastName.trim()) {
+          toast({
+            title: "Last Name Required",
+            description: "Please enter your last name to continue.",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!businessName.trim()) {
+          toast({
+            title: "Business Name Required",
+            description: "Please enter your business name to continue.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      
       setIsLoading(true);
 
       try {
         const { error } = isSignUp 
-          ? await signUp(email, password)
+          ? await signUp(email, password, firstName, lastName, businessName)
           : await signIn(email, password);
 
         if (error) {
@@ -79,6 +111,35 @@ const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   required
                 />
               </div>
+              {isSignUp && (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="text"
+                      placeholder="First Name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Last Name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Business Name"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              )}
               <div>
                 <Input
                   type="password"
@@ -95,7 +156,14 @@ const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setEmail('');
+                  setPassword('');
+                  setFirstName('');
+                  setLastName('');
+                  setBusinessName('');
+                }}
                 className="text-sm text-blue-600 hover:underline"
               >
                 {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}

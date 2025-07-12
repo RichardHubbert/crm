@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Building2, Users, Handshake, PoundSterling, Upload, Repeat, Zap, CheckCircle } from "lucide-react";
 import CSVImport from "@/components/CSVImport";
 import { UserInfo } from "@/components/UserInfo";
+import { UserLookup } from "@/components/UserLookup";
+import { UserIdDisplay } from "@/components/UserIdDisplay";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useDeals } from "@/hooks/useDeals";
 import { useContacts } from "@/hooks/useContacts";
@@ -169,6 +171,32 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Your User ID - Temporary */}
+      <Card className="col-span-full">
+        <CardHeader>
+          <CardTitle>Your User Information</CardTitle>
+          <CardDescription>
+            This shows your current user ID and basic information
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UserIdDisplay />
+        </CardContent>
+      </Card>
+
+      {/* User Lookup Tool - Temporary */}
+      <Card className="col-span-full">
+        <CardHeader>
+          <CardTitle>User Lookup Tool</CardTitle>
+          <CardDescription>
+            Look up information about user ID: 24e2799f-60d5-4e3b-bb30-b8049c9ae56d
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UserLookup />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">

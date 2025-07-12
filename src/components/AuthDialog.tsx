@@ -16,6 +16,9 @@ interface AuthDialogProps {
 export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const { signIn, signUp } = useAuthContext();
@@ -23,11 +26,40 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields for sign up
+    if (mode === 'signup') {
+      if (!firstName.trim()) {
+        toast({
+          title: "First Name Required",
+          description: "Please enter your first name to continue.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!lastName.trim()) {
+        toast({
+          title: "Last Name Required",
+          description: "Please enter your last name to continue.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!businessName.trim()) {
+        toast({
+          title: "Business Name Required",
+          description: "Please enter your business name to continue.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     setIsLoading(true);
 
     try {
       const { error } = mode === 'signup' 
-        ? await signUp(email, password)
+        ? await signUp(email, password, firstName, lastName, businessName)
         : await signIn(email, password);
 
       if (error) {
@@ -52,6 +84,9 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
         setOpen(false);
         setEmail('');
         setPassword('');
+        setFirstName('');
+        setLastName('');
+        setBusinessName('');
       }
     } catch (error) {
       console.error('Unexpected authentication error:', error);
@@ -95,6 +130,35 @@ export const AuthDialog: React.FC<AuthDialogProps> = ({ children, mode }) => {
                   required
                 />
               </div>
+              {mode === 'signup' && (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      type="text"
+                      placeholder="First Name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                    <Input
+                      type="text"
+                      placeholder="Last Name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Business Name"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              )}
               <div>
                 <Input
                   type="password"

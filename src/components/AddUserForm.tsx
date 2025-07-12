@@ -171,7 +171,7 @@ const AddUserForm = ({ form, onSubmit, isLoading, children }: AddUserFormProps) 
                     </div>
                   </div>
                   
-                  <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       {/[A-Z]/.test(field.value) ? 
                         <Check className="h-3 w-3 text-green-500" /> : 
@@ -212,33 +212,35 @@ const AddUserForm = ({ form, onSubmit, isLoading, children }: AddUserFormProps) 
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="first_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter first name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="first_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter first name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="last_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Last Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter last name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="last_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter last name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -268,14 +270,14 @@ const AddUserForm = ({ form, onSubmit, isLoading, children }: AddUserFormProps) 
                 <RadioGroup
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  className="space-y-3"
+                  className="space-y-2"
                 >
                   {roleOptions.map((role) => (
                     <div key={role.value}>
                       <label
                         htmlFor={`role-${role.value}`}
                         className={cn(
-                          "flex items-start space-x-3 space-y-0 rounded-md border p-4 cursor-pointer",
+                          "flex items-start space-x-3 space-y-0 rounded-md border p-3 cursor-pointer",
                           "hover:border-primary",
                           field.value === role.value ? role.borderColor : "border-muted",
                           field.value === role.value ? role.bgColor : "bg-popover"
@@ -288,10 +290,10 @@ const AddUserForm = ({ form, onSubmit, isLoading, children }: AddUserFormProps) 
                         />
                         <div className="space-y-1">
                           <div className="flex items-center">
-                            <role.icon className={cn("mr-2 h-5 w-5", role.color)} />
-                            <span className="font-medium">{role.label}</span>
+                            <role.icon className={cn("mr-2 h-4 w-4", role.color)} />
+                            <span className="font-medium text-sm">{role.label}</span>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {role.description}
                           </p>
                         </div>

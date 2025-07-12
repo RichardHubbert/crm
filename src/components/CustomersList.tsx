@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Building2, Edit } from "lucide-react";
+import { Building2, Edit, Briefcase } from "lucide-react";
 import { formatGBP } from "@/lib/utils";
 
 interface Customer {
@@ -13,6 +13,10 @@ interface Customer {
   industry: string | null;
   status: string;
   revenue: number;
+  business_id: string | null;
+  business?: {
+    name: string;
+  };
 }
 
 interface CustomersListProps {
@@ -84,6 +88,15 @@ const CustomersList = ({
                   <span className="text-sm text-muted-foreground">Revenue:</span>
                   <span className="text-sm font-medium">{formatRevenue(customer.revenue)}</span>
                 </div>
+                {customer.business && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Business:</span>
+                    <span className="text-sm font-medium flex items-center">
+                      <Briefcase className="mr-1 h-3 w-3" />
+                      {customer.business.name}
+                    </span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -105,6 +118,7 @@ const CustomersList = ({
             </TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Industry</TableHead>
+            <TableHead>Business</TableHead>
             <TableHead>Revenue</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="w-16">Actions</TableHead>
@@ -126,6 +140,16 @@ const CustomersList = ({
                 </div>
               </TableCell>
               <TableCell>{customer.industry || "-"}</TableCell>
+              <TableCell>
+                {customer.business ? (
+                  <div className="flex items-center">
+                    <Briefcase className="mr-1 h-3 w-3 text-muted-foreground" />
+                    <span className="text-sm">{customer.business.name}</span>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground text-sm">-</span>
+                )}
+              </TableCell>
               <TableCell>{formatRevenue(customer.revenue)}</TableCell>
               <TableCell>
                 <Badge variant={customer.status === "Active" ? "default" : "secondary"}>

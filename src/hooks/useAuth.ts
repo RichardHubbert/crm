@@ -31,7 +31,7 @@ export const useAuth = () => {
     return { data, error };
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, firstName: string, lastName: string, businessName: string) => {
     // Use the current origin for email redirect
     const redirectUrl = `${window.location.origin}/`;
     
@@ -39,9 +39,38 @@ export const useAuth = () => {
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl
+        emailRedirectTo: redirectUrl,
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          business_name: businessName.trim(),
+        }
       }
     });
+
+    // If signup was successful, save profile data
+    if (data.user && !error) {
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            email: data.user.email || '',
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            business_name: businessName.trim(),
+          });
+
+        if (profileError) {
+          console.error('Error saving profile data:', profileError);
+          // Don't fail the signup if profile save fails
+        }
+      } catch (profileError) {
+        console.error('Unexpected error saving profile data:', profileError);
+        // Don't fail the signup if profile save fails
+      }
+    }
+
     return { data, error };
   };
 

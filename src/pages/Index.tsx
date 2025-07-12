@@ -21,28 +21,28 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
+      <header className="flex items-center justify-between px-4 sm:px-6 py-4 bg-white border-b border-gray-100">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
             <div className="w-5 h-5 bg-white rounded-sm"></div>
           </div>
-          <span className="text-xl font-semibold text-gray-900">ai design crm</span>
+          <span className="text-lg sm:text-xl font-semibold text-gray-900">ai design crm</span>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <Button variant="ghost" className="hidden sm:flex text-gray-600 hover:text-gray-900">
             <Globe className="w-4 h-4 mr-2" />
             Contact sales
           </Button>
           
           <AuthDialog mode="signin">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+            <Button variant="ghost" className="text-gray-600 hover:text-gray-900 text-sm sm:text-base">
               Sign In
             </Button>
           </AuthDialog>
           
           <AuthDialog mode="signup">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-6 text-sm sm:text-base">
               Sign Up
             </Button>
           </AuthDialog>

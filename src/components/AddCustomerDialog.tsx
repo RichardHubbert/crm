@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useCustomers } from '@/hooks/useCustomers';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
+import { BusinessSelector } from './BusinessSelector';
 
 interface AddCustomerDialogProps {
   onCustomerAdded?: () => void;
@@ -20,6 +21,7 @@ const AddCustomerDialog = ({ onCustomerAdded }: AddCustomerDialogProps) => {
     status: 'Active',
     revenue: '',
   });
+  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { addCustomer } = useCustomers();
@@ -27,6 +29,16 @@ const AddCustomerDialog = ({ onCustomerAdded }: AddCustomerDialogProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!selectedBusinessId) {
+      toast({
+        title: "Business Required",
+        description: "Please select a business for this customer",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -48,12 +60,13 @@ const AddCustomerDialog = ({ onCustomerAdded }: AddCustomerDialogProps) => {
         status: 'Active',
         revenue: '',
       });
+      setSelectedBusinessId(null);
       setOpen(false);
       onCustomerAdded?.();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create customer",
+        description: error instanceof Error ? error.message : "Failed to create customer",
         variant: "destructive",
       });
     } finally {
@@ -65,6 +78,10 @@ const AddCustomerDialog = ({ onCustomerAdded }: AddCustomerDialogProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleBusinessSelected = (businessId: string) => {
+    setSelectedBusinessId(businessId);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -73,68 +90,84 @@ const AddCustomerDialog = ({ onCustomerAdded }: AddCustomerDialogProps) => {
           Add Customer
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Customer</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        
+        <div className="space-y-6">
+          {/* Business Selection */}
           <div>
-            <Label htmlFor="name">Customer Name *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Enter customer name"
-              required
+            <Label className="text-base font-medium">Business</Label>
+            <BusinessSelector
+              onBusinessSelected={handleBusinessSelected}
+              selectedBusinessId={selectedBusinessId}
             />
           </div>
 
-          <div>
-            <Label htmlFor="industry">Industry</Label>
-            <Input
-              id="industry"
-              value={formData.industry}
-              onChange={(e) => handleInputChange('industry', e.target.value)}
-              placeholder="Enter industry"
-            />
-          </div>
+          {/* Customer Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="name">Customer Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="Enter customer name"
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Prospect">Prospect</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div>
+              <Label htmlFor="industry">Industry</Label>
+              <Input
+                id="industry"
+                value={formData.industry}
+                onChange={(e) => handleInputChange('industry', e.target.value)}
+                placeholder="Enter industry"
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="revenue">Revenue (GBP)</Label>
-            <Input
-              id="revenue"
-              type="number"
-              value={formData.revenue}
-              onChange={(e) => handleInputChange('revenue', e.target.value)}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-            />
-          </div>
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  <SelectItem value="Prospect">Prospect</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Customer'}
-            </Button>
-          </div>
-        </form>
+            <div>
+              <Label htmlFor="revenue">Revenue (GBP)</Label>
+              <Input
+                id="revenue"
+                type="number"
+                value={formData.revenue}
+                onChange={(e) => handleInputChange('revenue', e.target.value)}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !selectedBusinessId}
+              >
+                {isSubmitting ? 'Creating...' : 'Create Customer'}
+              </Button>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

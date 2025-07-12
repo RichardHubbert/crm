@@ -67,7 +67,7 @@ const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
           <DialogDescription>
@@ -75,21 +75,25 @@ const AddUserDialog = ({ open, onOpenChange, onUserAdded }: AddUserDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <AddUserForm form={form} onSubmit={onSubmit} isLoading={isLoading}>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create User"}
-            </Button>
-          </DialogFooter>
-        </AddUserForm>
+        <div className="flex-1 overflow-y-auto pr-2">
+          <AddUserForm form={form} onSubmit={onSubmit} isLoading={isLoading}>
+            <div className="h-4"></div> {/* Spacer */}
+          </AddUserForm>
+        </div>
+
+        <DialogFooter className="pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isLoading} onClick={form.handleSubmit(onSubmit)}>
+            {isLoading ? "Creating..." : "Create User"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

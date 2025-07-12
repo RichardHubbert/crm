@@ -98,6 +98,25 @@ serve(async (req) => {
 
     console.log('User created successfully:', newUser.user.id)
 
+    // Create profile record
+    console.log('Creating profile record...')
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .insert({
+        id: newUser.user.id,
+        email: newUser.user.email || '',
+        first_name: first_name || null,
+        last_name: last_name || null,
+        business_name: business_name || null,
+      })
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError)
+      // Don't throw here as user is already created
+    } else {
+      console.log('Profile created successfully')
+    }
+
     // Add user role
     console.log('Adding user role:', role || 'user')
     const { error: roleError } = await supabaseAdmin
