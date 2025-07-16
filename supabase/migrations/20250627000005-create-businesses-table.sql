@@ -78,6 +78,13 @@ CREATE POLICY "Business owners can delete businesses"
     )
   );
 
+-- Allow admins to view all businesses
+CREATE POLICY "Admins can view all businesses"
+  ON public.businesses
+  FOR SELECT
+  TO authenticated
+  USING (public.is_admin(auth.uid()));
+
 -- Create RLS policies for business_users
 CREATE POLICY "Users can view business memberships" 
   ON public.business_users 

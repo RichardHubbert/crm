@@ -14,6 +14,7 @@ import Deals from "./pages/Deals";
 import DealView from "./pages/DealView";
 import Contacts from "./pages/Contacts";
 import AdminUsers from "./pages/AdminUsers";
+import BusinessIdDebug from "./pages/BusinessIdDebug";
 import NotFound from "./pages/NotFound";
 import { AppSidebar } from "./components/AppSidebar";
 import { SidebarInset } from "./components/ui/sidebar";
@@ -46,6 +47,7 @@ const ProtectedLayout = () => {
               <Route path="/deals/:id" element={<DealView />} />
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/debug/business-id" element={<BusinessIdDebug />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </SidebarInset>

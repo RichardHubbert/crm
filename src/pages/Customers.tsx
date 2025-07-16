@@ -210,8 +210,17 @@ const Customers = () => {
 
       <EditCustomerDialog
         open={showEditDialog}
-        onOpenChange={setShowEditDialog}
+        onClose={() => {
+          setShowEditDialog(false);
+          setEditingCustomer(null);
+        }}
         customer={editingCustomer}
+        onSave={async (updatedCustomer) => {
+          // TODO: Add your update logic here, e.g. await updateCustomer(updatedCustomer);
+          setShowEditDialog(false);
+          setEditingCustomer(null);
+          refetch(); // Optionally refetch customers
+        }}
       />
 
       <DeleteConfirmationDialog

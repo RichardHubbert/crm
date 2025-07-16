@@ -47,7 +47,7 @@ const AddCustomerDialog = ({ onCustomerAdded }: AddCustomerDialogProps) => {
         industry: formData.industry || null,
         status: formData.status,
         revenue: parseFloat(formData.revenue) || 0,
-      });
+      }, selectedBusinessId);
 
       toast({
         title: "Success",

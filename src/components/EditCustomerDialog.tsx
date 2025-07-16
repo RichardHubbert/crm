@@ -1,130 +1,76 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCustomers } from "@/hooks/useCustomers";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
+import { useBusinesses } from "../hooks/useBusinesses";
 
-interface Customer {
-  id: string;
-  name: string;
-  industry: string | null;
-  status: string;
-  revenue: number;
-}
+// Props: open (bool), onClose (fn), customer (object), onSave (fn)
+export default function EditCustomerDialog({ open, onClose, customer, onSave }) {
+  const { businesses, loading } = useBusinesses();
+  console.log('Fetched businesses:', businesses);
+  const [name, setName] = useState(customer?.name || "");
+  const [industry, setIndustry] = useState(customer?.industry || "");
+  const [revenue, setRevenue] = useState(customer?.revenue || 0);
+  const [status, setStatus] = useState(customer?.status || "Active");
+  const [businessId, setBusinessId] = useState(customer?.business_id || "");
 
-interface EditCustomerDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  customer: Customer | null;
-}
-
-const EditCustomerDialog = ({ open, onOpenChange, customer }: EditCustomerDialogProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    industry: "",
-    revenue: "",
-    status: "Active"
-  });
-
-  const { updateCustomer } = useCustomers();
-
+  // Sync state when customer changes (e.g., dialog opens for a different customer)
   useEffect(() => {
-    if (customer) {
-      setFormData({
-        name: customer.name || "",
-        industry: customer.industry || "",
-        revenue: customer.revenue?.toString() || "0",
-        status: customer.status || "Active"
-      });
-    }
+    setName(customer?.name || "");
+    setIndustry(customer?.industry || "");
+    setRevenue(customer?.revenue || 0);
+    setStatus(customer?.status || "Active");
+    setBusinessId(customer?.business_id || "");
   }, [customer]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!customer || !formData.name.trim()) {
-      toast.error("Customer name is required");
+    if (!businessId) {
+      alert("Please select a business.");
       return;
     }
-
-    setIsLoading(true);
-    try {
-      await updateCustomer(customer.id, {
-        name: formData.name,
-        industry: formData.industry || null,
-        revenue: parseFloat(formData.revenue) || 0,
-        status: formData.status,
-      });
-
-      toast.success("Customer updated successfully");
-      onOpenChange(false);
-    } catch (error) {
-      toast.error("Failed to update customer");
-      console.error('Update error:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // Call onSave with updated customer data
+    onSave({
+      ...customer,
+      name,
+      industry,
+      revenue,
+      status,
+      business_id: businessId,
+    });
+    onClose();
   };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  if (!customer) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Customer</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Enter customer name"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="industry">Industry</Label>
-            <Input
-              id="industry"
-              value={formData.industry}
-              onChange={(e) => handleInputChange("industry", e.target.value)}
-              placeholder="Industry"
-            />
-          </div>
-
           <div>
-            <Label htmlFor="revenue">Revenue (GBP)</Label>
+            <label className="block mb-1 font-medium">Name *</label>
+            <Input value={name} onChange={e => setName(e.target.value)} required />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Industry</label>
+            <Input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="Industry" />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Revenue (GBP)</label>
             <Input
-              id="revenue"
               type="number"
-              value={formData.revenue}
-              onChange={(e) => handleInputChange("revenue", e.target.value)}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
+              value={revenue}
+              onChange={e => setRevenue(Number(e.target.value))}
+              min={0}
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-              <SelectTrigger>
-                <SelectValue />
+          <div>
+            <label className="block mb-1 font-medium">Status</label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Active">Active</SelectItem>
@@ -132,25 +78,29 @@ const EditCustomerDialog = ({ open, onOpenChange, customer }: EditCustomerDialog
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
+          <div>
+            <label className="block mb-1 font-medium">Business</label>
+            <Select value={businessId} onValueChange={setBusinessId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={loading ? "Loading..." : "Select a business"} />
+              </SelectTrigger>
+              <SelectContent>
+                {businesses.map((biz) => (
+                  <SelectItem key={biz.id} value={biz.id}>
+                    {biz.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Update Customer
-            </Button>
-          </div>
+            <Button type="submit">Update Customer</Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-};
-
-export default EditCustomerDialog;
+}

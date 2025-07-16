@@ -12,6 +12,7 @@ export interface Deal {
   deal_type: 'one_off' | 'recurring';
   notes?: string;
   user_id: string;
+  business_id: string | null; // Added business_id field
   created_at: string;
   updated_at: string;
   customer?: {
@@ -46,14 +47,34 @@ export const useDeals = () => {
     }
   };
 
-  const addDeal = async (dealData: Omit<Deal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'customer'>) => {
+  const addDeal = async (dealData: Omit<Deal, 'id' | 'user_id' | 'business_id' | 'created_at' | 'updated_at' | 'customer'>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+      
+      // Get the user's business association
+      const { data: userBusiness, error: businessError } = await supabase
+        .from('business_users')
+        .select('business_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (businessError) {
+        console.error('Error fetching user business:', businessError);
+        throw new Error('Failed to get user business association');
+      }
+      
+      if (!userBusiness?.business_id) {
+        throw new Error('User not associated with any business');
+      }
 
       const { data, error } = await supabase
         .from('deals')
-        .insert([{ ...dealData, user_id: user.id }])
+        .insert([{ 
+          ...dealData, 
+          user_id: user.id,
+          business_id: userBusiness.business_id // Add business_id from user's business association
+        }])
         .select(`
           *,
           customer:customers(name)
@@ -71,7 +92,7 @@ export const useDeals = () => {
     }
   };
 
-  const updateDeal = async (id: string, dealData: Partial<Omit<Deal, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'customer'>>) => {
+  const updateDeal = async (id: string, dealData: Partial<Omit<Deal, 'id' | 'user_id' | 'business_id' | 'created_at' | 'updated_at' | 'customer'>>) => {
     try {
       console.log('Updating deal with data:', dealData);
       

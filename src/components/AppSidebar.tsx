@@ -1,5 +1,5 @@
 
-import { Building2, Users, Handshake, Phone, BarChart3, Shield } from "lucide-react";
+import { Building2, Users, Handshake, Phone, BarChart3, Shield, Bug } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -45,6 +45,14 @@ const adminMenuItems = [
   },
 ];
 
+const debugMenuItems = [
+  {
+    title: "Business ID Debug",
+    url: "/debug/business-id",
+    icon: Bug,
+  },
+];
+
 export function AppSidebar() {
   const location = useLocation();
   const { isAdmin } = useIsAdmin();
@@ -87,6 +95,29 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={location.pathname === item.url}
+                    >
+                      <Link to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Debugging Tools</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {debugMenuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
                       asChild 

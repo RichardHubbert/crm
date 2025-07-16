@@ -81,6 +81,11 @@ const CustomersList = ({
                 </div>
               </div>
               <CardDescription>{customer.industry || "No industry specified"}</CardDescription>
+              {customer.business && customer.business.name && (
+                <div className="text-sm text-muted-foreground mt-1">
+                  <strong>Business:</strong> {customer.business.name}
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-2">

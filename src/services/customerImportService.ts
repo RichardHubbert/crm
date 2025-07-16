@@ -11,6 +11,8 @@ export interface ImportCustomerData {
   address?: string
   website?: string
   notes?: string
+  restaurant_id?: string
+  business_id?: string
   source_database_id?: string
   source_customer_id?: string
   created_at?: string
@@ -37,6 +39,10 @@ export interface ImportResult {
   summary: ImportSummary
 }
 
+// Mapping constants
+const SOURCE_BUSINESS_ID = '24e2799f-60d5-4e3b-bb30-b8049c9ae56d';
+const CRM_BUSINESS_ID = '9c38d437-b6c9-425a-9199-d514007fcb63';
+
 export const importCustomersFromDatabase = async (
   customerData: ImportCustomerData[],
   sourceDatabaseId?: string
@@ -60,12 +66,16 @@ export const importCustomersFromDatabase = async (
       throw new Error('No authentication token available');
     }
 
-    // Prepare the data with source database ID if provided
+    // Prepare the data with source database ID if provided, and map business_id
+    console.log('Original customer data business_ids:', customerData.map(c => ({ name: c.name, business_id: c.business_id })));
+    
     const preparedData = customerData.map(customer => ({
       ...customer,
-      source_database_id: sourceDatabaseId || customer.source_database_id
+      source_database_id: sourceDatabaseId || customer.source_database_id,
+      business_id: customer.business_id === SOURCE_BUSINESS_ID ? CRM_BUSINESS_ID : customer.business_id
     }));
 
+    console.log('Prepared data with business_ids:', preparedData.map(c => ({ name: c.name, business_id: c.business_id })));
     console.log('Calling receive-customer-data edge function...');
     
     // Call the Edge Function to import customers
@@ -83,6 +93,7 @@ export const importCustomersFromDatabase = async (
     console.log('Edge function response status:', response.status);
 
     const result = await response.json();
+    console.log('Edge function response:', result);
 
     if (!response.ok) {
       console.error('Edge function error:', result);
@@ -124,7 +135,9 @@ export const fetchCustomersFromDatabase = async (
       throw new Error(`Failed to fetch customers from source database: ${error.message}`);
     }
 
-    // Transform the data to match our import format
+    // Transform the data to match our import format, and map business_id if present
+    console.log('Source database raw data:', data?.map(c => ({ name: c.name, business_id: c.business_id })));
+    
     const transformedData: ImportCustomerData[] = (data || []).map(customer => ({
       name: customer.name,
       industry: customer.industry,
@@ -135,13 +148,16 @@ export const fetchCustomersFromDatabase = async (
       address: customer.address,
       website: customer.website,
       notes: customer.notes,
+      restaurant_id: customer.restaurant_id, // Preserve restaurant_id for mapping
       source_database_id: sourceDatabaseId,
       source_customer_id: customer.id, // Use the original ID as source_customer_id
       created_at: customer.created_at,
-      updated_at: customer.updated_at
+      updated_at: customer.updated_at,
+      business_id: customer.business_id === SOURCE_BUSINESS_ID ? CRM_BUSINESS_ID : customer.business_id
     }));
 
     console.log(`Fetched ${transformedData.length} customers from source database`);
+    console.log('Transformed data with business_ids:', transformedData.map(c => ({ name: c.name, business_id: c.business_id })));
     return transformedData;
   } catch (error) {
     console.error('Error in fetchCustomersFromDatabase:', error);

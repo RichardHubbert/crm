@@ -18,10 +18,18 @@ interface IncomingCustomerData {
   address?: string
   website?: string
   notes?: string
+  business_id?: string
+  restaurant_id?: string // For backward compatibility with source database
   source_database_id?: string
   source_customer_id?: string
   created_at?: string
   updated_at?: string
+}
+
+// Interface for existing customer records
+interface ExistingCustomer {
+  id: string;
+  business_id?: string;
 }
 
 // Interface for the response
@@ -30,6 +38,9 @@ interface CustomerResponse {
   customer_id?: string
   message: string
   error?: string
+  action?: 'inserted' | 'updated'
+  business_id?: string
+  customer_name?: string
 }
 
 serve(async (req) => {
@@ -149,6 +160,7 @@ serve(async (req) => {
     }
 
     const customerDataArray: IncomingCustomerData[] = body.customer_data
+    console.log('Received customer data array:', customerDataArray.map(c => ({ name: c.name, business_id: c.business_id })))
     const results: CustomerResponse[] = []
 
     // Process each customer
@@ -164,77 +176,135 @@ serve(async (req) => {
           continue
         }
 
-        // Check if customer already exists (by source_customer_id if provided)
-        let existingCustomer = null
+        // Define customerPayload at the top level of the try block so it's available in the catch block
+        let customerPayload: Record<string, any> = {};
+        
+        // Check if customer already exists (by source_customer_id if available)
+        let existingCustomer: ExistingCustomer | null = null;
         if (customerData.source_customer_id) {
-          const { data: existing } = await supabaseAdmin
+          const { data, error } = await supabaseAdmin
             .from('customers')
-            .select('id')
+            .select('id, business_id')
             .eq('source_customer_id', customerData.source_customer_id)
+            .eq('source_database_id', customerData.source_database_id)
             .maybeSingle()
           
-          existingCustomer = existing
+          if (error) {
+            console.error('Error checking for existing customer:', error)
+          } else if (data) {
+            console.log('Found existing customer:', data)
+            existingCustomer = data;
+          }
+        }
+
+        // Get the user's business association
+        const { data: userBusiness, error: businessError } = await supabaseAdmin
+          .from('business_users')
+          .select('business_id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (businessError) {
+          console.error('Error fetching user business:', businessError)
+          results.push({
+            success: false,
+            message: `Failed to get user business for customer: ${customerData.name}`,
+            error: 'User not associated with any business'
+          })
+          continue
+        }
+
+        if (!userBusiness?.business_id) {
+          results.push({
+            success: false,
+            message: `User not associated with any business for customer: ${customerData.name}`,
+            error: 'User not associated with any business'
+          })
+          continue
+        }
+
+        // Validate business_id
+        let finalBusinessId: string;
+        
+        if (customerData.business_id) {
+          console.log('Using provided business_id from customer data:', customerData.business_id)
+          finalBusinessId = customerData.business_id
+        } else if (userBusiness?.business_id) {
+          console.log('Using default business_id from user association:', userBusiness.business_id)
+          finalBusinessId = userBusiness.business_id
+        } else {
+          console.error('No business_id available from customer data or user association!')
+          throw new Error('No business_id available for customer')
         }
 
         // Prepare customer data for insertion/update
-        const customerPayload = {
+        customerPayload = {
           name: customerData.name.trim(),
           industry: customerData.industry || null,
           status: customerData.status || 'Active',
           revenue: customerData.revenue || 0,
-          user_id: user.id, // Assign to the importing user
+          user_id: user.id,
+          business_id: finalBusinessId, // Use the validated business_id
           source_database_id: customerData.source_database_id || null,
           source_customer_id: customerData.source_customer_id || null,
           notes: customerData.notes || null,
           updated_at: new Date().toISOString()
         }
+        console.log('Final customer payload with business_id:', customerPayload.business_id)
+        console.log('Prepared customerPayload for insert:', customerPayload)
 
         let result: CustomerResponse
 
         if (existingCustomer) {
           // Update existing customer
+          console.log('Updating existing customer with ID:', existingCustomer.id)
+          console.log('Update payload business_id:', customerPayload.business_id)
+          
           const { data, error } = await supabaseAdmin
             .from('customers')
             .update(customerPayload)
             .eq('id', existingCustomer.id)
-            .select('id')
+            .select()
             .single()
-
+          
           if (error) {
             console.error('Error updating customer:', error)
-            result = {
-              success: false,
-              message: `Failed to update customer: ${customerData.name}`,
-              error: error.message
-            }
-          } else {
-            result = {
-              success: true,
-              customer_id: data.id,
-              message: `Customer updated successfully: ${customerData.name}`
-            }
+            throw error
+          }
+          
+          console.log('Updated customer result:', data)
+          console.log('Updated customer business_id:', data.business_id)
+          result = { 
+            success: true, 
+            customer_id: data.id, 
+            action: 'updated', 
+            business_id: data.business_id,
+            message: `Customer updated successfully: ${customerData.name}`
           }
         } else {
           // Insert new customer
+          console.log('Inserting new customer')
+          console.log('Insert payload business_id:', customerPayload.business_id)
+          
           const { data, error } = await supabaseAdmin
             .from('customers')
             .insert([customerPayload])
-            .select('id')
+            .select()
             .single()
-
+          
           if (error) {
             console.error('Error inserting customer:', error)
-            result = {
-              success: false,
-              message: `Failed to create customer: ${customerData.name}`,
-              error: error.message
-            }
-          } else {
-            result = {
-              success: true,
-              customer_id: data.id,
-              message: `Customer created successfully: ${customerData.name}`
-            }
+            throw error
+          }
+          
+          console.log('Inserted customer result:', data)
+          console.log('Inserted customer business_id:', data.business_id)
+          result = { 
+            success: true, 
+            customer_id: data.id, 
+            action: 'inserted', 
+            business_id: data.business_id,
+            message: `Customer created successfully: ${customerData.name}`
           }
         }
 
@@ -242,11 +312,20 @@ serve(async (req) => {
 
       } catch (error) {
         console.error('Error processing customer:', error)
-        results.push({
-          success: false,
-          message: `Error processing customer: ${customerData.name || 'Unknown'}`,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        })
+        try {
+          // Log the payload that failed, if it exists
+          console.error('Customer payload that failed:', customerPayload)
+        } catch (logError) {
+          console.error('Could not log customer payload, variable may be out of scope')
+        }
+        
+        const errorResult: CustomerResponse = { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          customer_name: customerData.name,
+          message: `Error processing customer: ${customerData.name || 'Unknown'}`
+        };
+        results.push(errorResult)
       }
     }
 

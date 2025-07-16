@@ -84,41 +84,56 @@ export const useCustomers = () => {
     }
   };
 
-  const addCustomer = async (customerData: Omit<Customer, 'id' | 'user_id' | 'business_id' | 'created_at' | 'updated_at'>) => {
+  const addCustomer = async (customerData: Omit<Customer, 'id' | 'user_id' | 'business_id' | 'created_at' | 'updated_at'>, businessId?: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get the user's business
-      const { data: businessData, error: businessError } = await supabase
-        .from('business_users')
-        .select('business_id')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      let finalBusinessId = businessId;
 
-      if (businessError) {
-        console.error('Error fetching user business:', businessError);
-        throw new Error('Failed to get user business');
+      // If no business ID provided, get the user's default business
+      if (!finalBusinessId) {
+        const { data: businessData, error: businessError } = await supabase
+          .from('business_users')
+          .select('business_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (businessError) {
+          console.error('Error fetching user business:', businessError);
+          throw new Error('Failed to get user business');
+        }
+
+        if (!businessData?.business_id) {
+          throw new Error('User is not associated with any business');
+        }
+
+        finalBusinessId = businessData.business_id;
       }
 
-      if (!businessData?.business_id) {
-        throw new Error('User is not associated with any business');
-      }
+      console.log('Creating customer with data:', {
+        customerData,
+        user_id: user.id,
+        business_id: finalBusinessId
+      });
 
       const { data, error } = await supabase
         .from('customers')
         .insert([{ 
           ...customerData, 
           user_id: user.id,
-          business_id: businessData.business_id
+          business_id: finalBusinessId
         }])
         .select()
         .maybeSingle();
+
+      console.log('Customer creation result:', { data, error });
 
       if (error) throw error;
       
       if (!data) throw new Error('Failed to create customer');
       
+      console.log('Customer created successfully:', data);
       setCustomers(prev => [data, ...prev]);
       return data;
     } catch (err) {
